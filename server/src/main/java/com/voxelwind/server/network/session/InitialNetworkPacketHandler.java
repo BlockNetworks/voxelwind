@@ -64,6 +64,7 @@ public class InitialNetworkPacketHandler implements NetworkPacketHandler {
 
     @Override
     public void handle(McpeLogin packet) {
+        System.out.println("> HANDLE McpeLogin");
         if (!VersionUtil.isCompatible(packet.getProtocolVersion())) {
             Optional<InetSocketAddress> address = session.getRemoteAddress();
             int[] compatible = VersionUtil.getCompatibleProtocolVersions();
@@ -176,7 +177,8 @@ public class InitialNetworkPacketHandler implements NetworkPacketHandler {
         throw new IllegalStateException("Got unexpected ItemReleaseTransaction");
     }
 
-    private void verifyLogin(AsciiString chainData, AsciiString skinData){
+    private void verifyLogin(AsciiString chainData, AsciiString skinData) {
+        System.out.println("> VERIFY LOGIN");
         JsonNode certData;
         try {
             certData = VoxelwindServer.MAPPER.readTree(chainData.toByteArray());
@@ -224,6 +226,7 @@ public class InitialNetworkPacketHandler implements NetworkPacketHandler {
         }
     }
     private void startEncryptionHandshake(PublicKey key) throws Exception {
+        System.out.println("> Start encryption handshake");
         // Generate a fresh key for each session
         KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         generator.initialize(new ECGenParameterSpec("secp384r1"));
@@ -239,6 +242,7 @@ public class InitialNetworkPacketHandler implements NetworkPacketHandler {
     }
 
     private void initializePlayerSession() {
+        System.out.println("> Initialize player session");
         TemporarySession apiSession = new TemporarySession(session);
         SessionLoginEvent event = new SessionLoginEvent(apiSession);
         session.getServer().getEventManager().fire(event);
@@ -257,6 +261,7 @@ public class InitialNetworkPacketHandler implements NetworkPacketHandler {
 
         McpeResourcePacksInfo info = new McpeResourcePacksInfo();
         session.addToSendQueue(info);
+        System.out.println("RESOURCE PACKS INFO");
     }
 
     // Verify whether client has sent valid and trusted certificate chain

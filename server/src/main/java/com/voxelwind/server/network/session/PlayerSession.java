@@ -229,7 +229,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         startGame.setEntityId(getEntityId());
         startGame.setRuntimeEntityId(getEntityId());
         startGame.setPlayerGamemode(playerDataComponent.getGameMode().ordinal());
-        startGame.setSpawn(getGamePosition());
+        startGame.setPlayerPosition(getGamePosition());
         startGame.setPitch(event.getRotation().getPitch());
         startGame.setYaw(event.getRotation().getYaw());
         startGame.setSeed((int)getLevel().getSeed());
@@ -241,25 +241,34 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         startGame.setHasAchievementsDisabled(true);
         startGame.setDayCycleStopTime(getLevel().getTime());
         startGame.setEduMode(getMcpeSession().getClientData().isEduMode());
+        startGame.setEduFeaturesEnabled(false);
         startGame.setRainLevel(0F);
         startGame.setLightingLevel(0F);
+        startGame.setPlatformLockedContentConfirmed(false);
         startGame.setMultiplayer(true);
         startGame.setBroadcastToLan(true);
-        startGame.setBroadcastToXbl(true);
+        startGame.setXblBroadcastMode(0);
+        startGame.setPlatformBroadcastMode(0);
         startGame.setEnableCommands(true);
         startGame.setTexturepacksRequired(false);
         startGame.getGameRules().addAll(getGameRules());
         startGame.setBonusChest(false);
         startGame.setMapEnabled(true);
-        startGame.setTrustPlayers(true);
         startGame.setPermissionLevel(PermissionLevel.CUSTOM);
-        startGame.setGamePublishSettings(3);
+        startGame.setServerChunkTickRange(4);
+        startGame.setBehaviourPackLocked(false);
+        startGame.setResourcePackLocked(false);
+        startGame.setFromLockedWorldTemplate(false);
+        startGame.setUsingMsaGamertagsOnly(false);
+        startGame.setFromWorldTemplate(false);
+        startGame.setWorldTemplateOptionLocked(false);
         startGame.setLevelId("SECRET");
         startGame.setWorldName(getLevel().getName());
         startGame.setPremiumWorldTemplateId("");
         startGame.setTrial(false);
         startGame.setCurrentTick(0);
         startGame.setEnchantmentSeed(0);
+        startGame.setMultiplayerCorrelationId("");
         session.addToSendQueue(startGame);
 
         McpeSetTime setTime = new McpeSetTime();
@@ -279,6 +288,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
     }
 
     private CompletableFuture<List<Chunk>> getChunksForRadius(int radius) {
+        java.lang.System.out.println("> Get chunks for radius: (radius = " + String.valueOf(radius) + ")");
         // Get current player's position in chunk coordinates.
         int chunkX = getPosition().getFloorX() >> 4;
         int chunkZ = getPosition().getFloorZ() >> 4;
@@ -308,6 +318,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
     }
 
     private void sendAdventureSettings() {
+        java.lang.System.out.println("> Sending adventure settings (before)");
         PlayerData playerData = ensureAndGet(PlayerData.class);
         McpeAdventureSettings settings = new McpeAdventureSettings();
         boolean spectator = (playerData.getGameMode() == GameMode.SPECTATOR);
@@ -329,9 +340,11 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         settings.setUserId(getEntityId());
 
         session.addToSendQueue(settings);
+        java.lang.System.out.println("> Sending adventure settings (after)");
     }
 
     private void initializeGamerules() {
+        java.lang.System.out.println("> Initialize gamerules");
         gamerules.add(new Gamerule<>("drowningdamage", true));
         gamerules.add(new Gamerule<>("dotiledrops", true));
         gamerules.add(new Gamerule<>("commandblockoutput", true));
@@ -370,6 +383,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
     }
 
     public void updateViewableEntities() {
+        java.lang.System.out.println("> Updating viewable entities");
         synchronized (isViewing) {
             Collection<BaseEntity> inView = getLevel().getEntityManager().getEntitiesInDistance(getPosition(), 64);
             TLongSet mustRemove = new TLongHashSet();
@@ -445,6 +459,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
     }
 
     private CompletableFuture<List<Chunk>> sendNewChunks() {
+        java.lang.System.out.println("> Sending new chunks");
         return getChunksForRadius(viewDistance).whenComplete((chunks, throwable) -> {
             if (throwable != null) {
                 log.error("Unable to load chunks for " + getMcpeSession().getAuthenticationProfile().getDisplayName(), throwable);
@@ -466,6 +481,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
 
     @Override
     public void sendMessage(@Nonnull String message, @Nonnull PlayerMessageDisplayType type) {
+        java.lang.System.out.println("> Sending message");
         Preconditions.checkNotNull(message, "message");
         Preconditions.checkNotNull(type, "type");
         McpeText text = new McpeText();
@@ -684,6 +700,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
     }
 
     public void sendPlayerInventory() {
+        java.lang.System.out.println("> Sending player inventory (before)");
         McpeInventoryContent initContents = new McpeInventoryContent();
         initContents.setInventoryId(0x7b);
         initContents.setStacks(new ItemStack[]{});
@@ -714,6 +731,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         mobEquipment.setInventorySlot((byte) getInventory().getHeldInventorySlot());
 
         session.addToSendQueue(mobEquipment);
+        java.lang.System.out.println("> Sending player inventory (after)");
     }
 
     @Override
@@ -872,6 +890,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
 
         @Override
         public void handle(McpeRequestChunkRadius packet) {
+            java.lang.System.out.println("> Request chunk radius (before)");
             int radius = Math.max(5, Math.min(vwServer.getConfiguration().getMaximumViewDistance(), packet.getRadius()));
             McpeChunkRadiusUpdate updated = new McpeChunkRadiusUpdate();
             updated.setRadius(radius);
@@ -911,6 +930,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
                     session.getServer().getEventManager().fire(event);
                 }
             });
+            java.lang.System.out.println("> Request chunk radius (after)");
         }
 
         @Override
@@ -1230,6 +1250,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
 
         @Override
         public void handle(McpeCommandRequest packet) {
+            java.lang.System.out.println("> Handle command request");
             Health health = ensureAndGet(Health.class);
             if (!spawned || health.isDead()) {
                 return;
@@ -1309,8 +1330,9 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         packet.setHealth(health.getHealth());
         session.addToSendQueue(packet);
     }
-
+boolean up = false;
     private void updatePlayerList() {
+        if(!up) java.lang.System.out.println("> Updating player list"); up = true;
         synchronized (playersSentForList) {
             Set<Player> toAdd = new HashSet<>();
             Set<UUID> toRemove = new HashSet<>();

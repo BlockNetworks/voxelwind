@@ -1,18 +1,25 @@
 package com.voxelwind.server.network.mcpe.packets;
 
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
 import com.voxelwind.nbt.util.Varints;
+import com.voxelwind.server.VoxelwindServer;
 import com.voxelwind.server.game.level.util.Gamerule;
 import com.voxelwind.server.game.permissions.PermissionLevel;
 import com.voxelwind.server.network.NetworkPackage;
 import com.voxelwind.server.network.mcpe.McpeUtil;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
+import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Log4j2
@@ -21,7 +28,7 @@ public class McpeStartGame implements NetworkPackage {
     private long entityId; // = null;
     private long runtimeEntityId; // = null;
     private int playerGamemode;
-    private Vector3f spawn; // = null;
+    private Vector3f playerPosition; // = null;
     private float pitch; // = null;
     private float yaw;
     private int seed; // = null;
@@ -33,26 +40,38 @@ public class McpeStartGame implements NetworkPackage {
     private boolean hasAchievementsDisabled; // = null;
     private int dayCycleStopTime; // = null;
     private boolean eduMode; // = null;
+    private boolean eduFeaturesEnabled; // = null;
     private float rainLevel; // = null;
     private float lightingLevel; // = null;
+    private boolean platformLockedContentConfirmed;
     private boolean multiplayer;
     private boolean broadcastToLan;
-    private boolean broadcastToXbl;
+    private int xblBroadcastMode;
+    private int platformBroadcastMode;
     private boolean enableCommands; // = null;
     private boolean texturepacksRequired; // = null;
     @Getter
     private final List<Gamerule> gameRules = new ArrayList<>();
     private boolean bonusChest;
     private boolean mapEnabled;
-    private boolean trustPlayers;
     private PermissionLevel permissionLevel;
-    private int gamePublishSettings;
+    private int serverChunkTickRange;
+    private boolean behaviourPackLocked;
+    private boolean resourcePackLocked;
+    private boolean fromLockedWorldTemplate;
+    private boolean usingMsaGamertagsOnly;
+    private boolean fromWorldTemplate;
+    private boolean worldTemplateOptionLocked;
     private String levelId; // = null;
     private String worldName; // = null;
     private String premiumWorldTemplateId = "";
     private boolean trial;
     private long currentTick;
     private int enchantmentSeed;
+    private String multiplayerCorrelationId; //44 total
+
+    private ByteBuf cachedPalette;
+    private Collection<Object> paletteEntries = new ArrayDeque<>();
 
     @Override
     public void decode(ByteBuf buffer) {
@@ -64,7 +83,7 @@ public class McpeStartGame implements NetworkPackage {
         Varints.encodeSignedLong(buffer, entityId);
         Varints.encodeUnsigned(buffer, runtimeEntityId);
         Varints.encodeSigned(buffer, playerGamemode);
-        McpeUtil.writeVector3f(buffer, spawn);
+        McpeUtil.writeVector3f(buffer, playerPosition);
         McpeUtil.writeFloatLE(buffer, pitch);
         McpeUtil.writeFloatLE(buffer, yaw);
         Varints.encodeSigned(buffer, seed);
@@ -76,11 +95,14 @@ public class McpeStartGame implements NetworkPackage {
         buffer.writeBoolean(hasAchievementsDisabled);
         Varints.encodeSigned(buffer, dayCycleStopTime);
         buffer.writeBoolean(eduMode);
+        buffer.writeBoolean(eduFeaturesEnabled);
         McpeUtil.writeFloatLE(buffer, rainLevel);
         McpeUtil.writeFloatLE(buffer, lightingLevel);
+        buffer.writeBoolean(platformLockedContentConfirmed);
         buffer.writeBoolean(multiplayer);
         buffer.writeBoolean(broadcastToLan);
-        buffer.writeBoolean(broadcastToXbl);
+        Varints.encodeSigned(buffer, xblBroadcastMode);
+        Varints.encodeSigned(buffer, platformBroadcastMode);
         buffer.writeBoolean(enableCommands);
         buffer.writeBoolean(texturepacksRequired);
         Varints.encodeUnsigned(buffer, gameRules.size());
@@ -100,14 +122,47 @@ public class McpeStartGame implements NetworkPackage {
         }
         buffer.writeBoolean(bonusChest);
         buffer.writeBoolean(mapEnabled);
-        buffer.writeBoolean(trustPlayers);
         Varints.encodeSigned(buffer, permissionLevel.ordinal());
-        Varints.encodeSigned(buffer, gamePublishSettings);
+        buffer.writeIntLE(serverChunkTickRange);
+        buffer.writeBoolean(behaviourPackLocked);
+        buffer.writeBoolean(resourcePackLocked);
+        buffer.writeBoolean(fromLockedWorldTemplate);
+        buffer.writeBoolean(usingMsaGamertagsOnly);
+        buffer.writeBoolean(fromWorldTemplate);
+        buffer.writeBoolean(worldTemplateOptionLocked);
         McpeUtil.writeVarintLengthString(buffer, levelId);
         McpeUtil.writeVarintLengthString(buffer, worldName);
         McpeUtil.writeVarintLengthString(buffer, premiumWorldTemplateId);
         buffer.writeBoolean(trial);
         buffer.writeLongLE(currentTick);
         Varints.encodeSigned(buffer, enchantmentSeed);
+
+        InputStream stream = VoxelwindServer.class.getClassLoader().getResourceAsStream("runtimeid_table.json");
+        if (stream == null) {
+            throw new AssertionError("Static RuntimeID table not found");
+        }
+        CollectionType type = VoxelwindServer.MAPPER.getTypeFactory().constructCollectionType(ArrayList.class, RuntimeEntry.class);
+        ArrayList<RuntimeEntry> entries;
+        try {
+            entries = VoxelwindServer.MAPPER.readValue(stream, type);
+        } catch (Exception e) {
+            throw new AssertionError("Could not load RuntimeID table");
+        }
+
+        Varints.encodeUnsigned(buffer, entries.size());
+
+        for (RuntimeEntry entry : entries) {
+            McpeUtil.writeVarintLengthString(buffer, entry.name);
+            buffer.writeShortLE(entry.data);
+        }
+
+        McpeUtil.writeVarintLengthString(buffer, multiplayerCorrelationId);
+    }
+
+    @AllArgsConstructor
+    private static class RuntimeEntry {
+        private final String name;
+        private final int id;
+        private final int data;
     }
 }

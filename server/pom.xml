@@ -11,6 +11,12 @@
 
     <artifactId>voxelwind-server</artifactId>
 
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <finalName>voxelwind-${project.version}</finalName>
         <plugins>
@@ -88,13 +94,13 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
-            <version>4.1.6.Final</version>
+            <version>4.1.24.Final</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-native-epoll</artifactId>
-            <version>4.1.6.Final</version>
+            <version>4.1.24.Final</version>
             <scope>compile</scope>
             <classifier>linux-x86_64</classifier>
         </dependency>

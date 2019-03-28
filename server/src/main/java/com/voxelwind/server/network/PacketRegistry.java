@@ -207,7 +207,6 @@ public class PacketRegistry {
             if (pkgClass.isAnnotationPresent(DisallowWrapping.class)) {
                 return null;
             }
-            buf.skipBytes(2); // Two byte space between ID and Data
         }
 
         NetworkPackage netPackage;
@@ -246,9 +245,6 @@ public class PacketRegistry {
 
         ByteBuf buf = PooledByteBufAllocator.DEFAULT.directBuffer();
         buf.writeByte((id & 0xFF));
-        if(fromBatch){
-            buf.writeBytes(new byte[]{0x00, 0x00});
-        }
         pkg.encode(buf);
 
         return buf;
