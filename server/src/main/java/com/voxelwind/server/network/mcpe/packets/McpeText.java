@@ -21,6 +21,7 @@ public class McpeText implements NetworkPackage {
     private String message;
     private TranslatedMessage translatedMessage;
     private String xuid = "";
+    private String platformChatId = "";
     @Getter
     private List<String> parameters = new ArrayList<>(); //TODO: implement parameters.
 
@@ -36,6 +37,7 @@ public class McpeText implements NetworkPackage {
             case RAW:
             case TIP:
             case SYSTEM:
+            case JSON:
                 message = McpeUtil.readVarintLengthString(buffer);
                 break;
             case TRANSLATION:
@@ -49,6 +51,7 @@ public class McpeText implements NetworkPackage {
                 break;
         }
         xuid = McpeUtil.readVarintLengthString(buffer);
+        platformChatId = McpeUtil.readVarintLengthString(buffer);
     }
 
     @Override
@@ -63,6 +66,7 @@ public class McpeText implements NetworkPackage {
             case RAW:
             case TIP:
             case SYSTEM:
+            case JSON:
                 McpeUtil.writeVarintLengthString(buffer, message);
                 break;
             case TRANSLATION:
@@ -75,6 +79,7 @@ public class McpeText implements NetworkPackage {
                 }
         }
         McpeUtil.writeVarintLengthString(buffer, xuid);
+        McpeUtil.writeVarintLengthString(buffer, platformChatId);
     }
 
     @Override
@@ -96,6 +101,7 @@ public class McpeText implements NetworkPackage {
         TIP,
         SYSTEM,
         WHISPER,
-        ANNOUNCEMENT
+        ANNOUNCEMENT,
+        JSON
     }
 }

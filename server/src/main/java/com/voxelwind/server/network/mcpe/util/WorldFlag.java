@@ -1,6 +1,6 @@
 package com.voxelwind.server.network.mcpe.util;
 
-public enum ActionPermissionFlag {
+public enum WorldFlag {
     BUILD_AND_MINE(0x1),
     DOORS_AND_SWITCHES(0x2),
     OPEN_CONTAINER(0x4),
@@ -13,7 +13,7 @@ public enum ActionPermissionFlag {
 
     private int flagVal;
 
-    ActionPermissionFlag(int flagVal) {
+    WorldFlag(int flagVal) {
         this.flagVal = flagVal;
     }
 

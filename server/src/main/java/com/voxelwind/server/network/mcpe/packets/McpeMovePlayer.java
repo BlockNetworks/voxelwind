@@ -17,7 +17,7 @@ public class McpeMovePlayer implements NetworkPackage {
     private boolean onGround;
     private long ridingEntityId;
     private TeleportationCause teleportationCause;
-    private int unknown0;
+    private int teleportItem;
 
     @Override
     public void decode(ByteBuf buffer) {
@@ -29,7 +29,7 @@ public class McpeMovePlayer implements NetworkPackage {
         ridingEntityId = Varints.decodeUnsigned(buffer);
         if (mode == Mode.TELEPORT) {
             teleportationCause = TeleportationCause.values()[buffer.readInt()];
-            unknown0 = buffer.readInt();
+            teleportItem = buffer.readInt();
         }
     }
 

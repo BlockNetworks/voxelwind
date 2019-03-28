@@ -24,7 +24,6 @@ public class McpeFullChunkData implements NetworkPackage {
     public void encode(ByteBuf buffer) {
         Varints.encodeSigned(buffer, chunkX);
         Varints.encodeSigned(buffer, chunkZ);
-        Varints.encodeUnsigned(buffer, data.length);
         buffer.writeBytes(data);
     }
 }

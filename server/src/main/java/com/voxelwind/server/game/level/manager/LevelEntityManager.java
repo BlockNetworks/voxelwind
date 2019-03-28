@@ -7,7 +7,7 @@ import com.voxelwind.api.game.entities.components.system.System;
 import com.voxelwind.server.game.entities.BaseEntity;
 import com.voxelwind.server.game.level.VoxelwindLevel;
 import com.voxelwind.server.game.level.util.BoundingBox;
-import com.voxelwind.server.network.mcpe.packets.McpeMoveEntity;
+import com.voxelwind.server.network.mcpe.packets.McpeMoveEntityAbsolute;
 import com.voxelwind.server.network.mcpe.packets.McpeSetEntityMotion;
 import com.voxelwind.server.network.session.McpeSession;
 import com.voxelwind.server.network.session.PlayerSession;
@@ -104,11 +104,13 @@ public class LevelEntityManager {
 
                     if (entity.isStale()) {
                         // Need to send packets.
-                        McpeMoveEntity moveEntityPacket = new McpeMoveEntity();
-                        moveEntityPacket.setRuntimeEntityId(entity.getEntityId());
-                        moveEntityPacket.setPosition(entity.getGamePosition());
-                        moveEntityPacket.setRotation(entity.getRotation());
-                        level.getPacketManager().queuePacketForViewers(entity, moveEntityPacket);
+                        McpeMoveEntityAbsolute moveEntityAbsolutePacket = new McpeMoveEntityAbsolute();
+                        moveEntityAbsolutePacket.setRuntimeEntityId(entity.getEntityId());
+                        moveEntityAbsolutePacket.setOnGround(entity.isOnGround());
+                        moveEntityAbsolutePacket.setTeleported(false);
+                        moveEntityAbsolutePacket.setPosition(entity.getGamePosition());
+                        moveEntityAbsolutePacket.setRotation(entity.getRotation());
+                        level.getPacketManager().queuePacketForViewers(entity, moveEntityAbsolutePacket);
 
                         McpeSetEntityMotion motionPacket = new McpeSetEntityMotion();
                         motionPacket.setRuntimeEntityId(entity.getEntityId());

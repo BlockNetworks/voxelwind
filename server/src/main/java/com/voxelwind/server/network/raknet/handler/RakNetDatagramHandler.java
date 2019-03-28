@@ -41,7 +41,7 @@ public class RakNetDatagramHandler extends SimpleChannelInboundHandler<Addressed
     protected void channelRead0(ChannelHandlerContext ctx, AddressedRakNetDatagram datagram) throws Exception {
         McpeSession session = server.getSessionManager().get(datagram.sender());
 
-        if (session == null)
+        if (session.isClosed())
             return;
 
         // Make sure a RakNet session is backing this packet.
@@ -166,7 +166,7 @@ public class RakNetDatagramHandler extends SimpleChannelInboundHandler<Addressed
         if (netPackage instanceof McpeUnknown) {
             if (log.isDebugEnabled()) {
                 log.debug("Unknown packet received with ID " + Integer.toHexString(((McpeUnknown) netPackage).getId()));
-                log.debug("Dump: {}", ByteBufUtil.hexDump(((McpeUnknown) netPackage).getBuf()));
+                //log.debug("Dump: {}", ByteBufUtil.hexDump(((McpeUnknown) netPackage).getBuf()));
             }
             ((McpeUnknown) netPackage).getBuf().release();
         }

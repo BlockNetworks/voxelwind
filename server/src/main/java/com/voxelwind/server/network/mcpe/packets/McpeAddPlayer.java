@@ -7,11 +7,14 @@ import com.voxelwind.nbt.util.Varints;
 import com.voxelwind.server.game.permissions.PermissionLevel;
 import com.voxelwind.server.network.NetworkPackage;
 import com.voxelwind.server.network.mcpe.McpeUtil;
-import com.voxelwind.server.network.mcpe.util.ActionPermissionFlag;
+import com.voxelwind.server.network.mcpe.util.WorldFlag;
+import com.voxelwind.server.network.mcpe.util.EntityLink;
 import com.voxelwind.server.network.mcpe.util.metadata.MetadataDictionary;
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -20,6 +23,7 @@ public class McpeAddPlayer implements NetworkPackage {
     private String username;
     private long entityId;
     private long runtimeEntityId;
+    private String platformChatId;
     private Vector3f position;
     private Vector3f velocity;
     private Rotation rotation;
@@ -27,11 +31,12 @@ public class McpeAddPlayer implements NetworkPackage {
     private final MetadataDictionary metadata = new MetadataDictionary();
     private int flags;
     private int commandPermission;
-    private int actionPermissions;
+    private int worldFlags;
     private PermissionLevel permissionLevel;
-    private int customPermissions;
+    private int customFlags;
     private long userId;
-    // private Links links; TODO
+    private final List<EntityLink> entityLinks = new ArrayList<>();
+    private String deviceId;
 
     @Override
     public void decode(ByteBuf buffer) {
@@ -44,6 +49,7 @@ public class McpeAddPlayer implements NetworkPackage {
         McpeUtil.writeVarintLengthString(buffer, username);
         Varints.encodeSignedLong(buffer, entityId);
         Varints.encodeUnsigned(buffer, runtimeEntityId);
+        McpeUtil.writeVarintLengthString(buffer, platformChatId);
         McpeUtil.writeVector3f(buffer, position);
         McpeUtil.writeVector3f(buffer, velocity);
         McpeUtil.writeRotation(buffer, rotation);
@@ -51,18 +57,22 @@ public class McpeAddPlayer implements NetworkPackage {
         metadata.writeTo(buffer);
         Varints.encodeUnsigned(buffer, flags);
         Varints.encodeUnsigned(buffer, commandPermission);
-        Varints.encodeUnsigned(buffer, actionPermissions);
+        Varints.encodeUnsigned(buffer, worldFlags);
         Varints.encodeUnsigned(buffer, permissionLevel.ordinal());
-        Varints.encodeUnsigned(buffer, customPermissions);
+        Varints.encodeUnsigned(buffer, customFlags);
         buffer.writeLongLE(userId);
-        Varints.encodeUnsigned(buffer, 0); // links, todo
+        Varints.encodeUnsigned(buffer, entityLinks.size());
+        for(EntityLink link : entityLinks) {
+            McpeUtil.writeEntityLink(buffer, link);
+        }
+        McpeUtil.writeVarintLengthString(buffer, deviceId);
     }
 
-    public void setActionPermissions(ActionPermissionFlag flag, boolean value) {
+    public void setWorldFlags(WorldFlag flag, boolean value) {
         if (value) {
-            actionPermissions |= flag.getVal();
+            worldFlags |= flag.getVal();
         } else {
-            actionPermissions &= ~flag.getVal();
+            worldFlags &= ~flag.getVal();
         }
     }
 }

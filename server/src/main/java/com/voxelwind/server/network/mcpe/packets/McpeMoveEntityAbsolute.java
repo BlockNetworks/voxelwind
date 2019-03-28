@@ -9,7 +9,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Data;
 
 @Data
-public class McpeMoveEntity implements NetworkPackage {
+public class McpeMoveEntityAbsolute implements NetworkPackage {
     private long runtimeEntityId;
     private Vector3f position;
     private Rotation rotation;
@@ -19,18 +19,29 @@ public class McpeMoveEntity implements NetworkPackage {
     @Override
     public void decode(ByteBuf buffer) {
         runtimeEntityId = Varints.decodeUnsigned(buffer);
+        int flags = buffer.readUnsignedByte();
+        onGround = (flags & Flag.GROUND.ordinal()) != 0;
+        teleported = (flags & Flag.TELEPORT.ordinal()) != 0;
         position = McpeUtil.readVector3f(buffer);
         rotation = McpeUtil.readByteRotation(buffer);
-        onGround = buffer.readBoolean();
-        teleported = buffer.readBoolean();
     }
 
     @Override
     public void encode(ByteBuf buffer) {
         Varints.encodeUnsigned(buffer, runtimeEntityId);
+        int flags = 0;
+        if (onGround) {
+            flags |= Flag.GROUND.ordinal();
+        }
+        if (teleported) {
+            flags |= Flag.TELEPORT.ordinal();
+        }
         McpeUtil.writeVector3f(buffer, position);
         McpeUtil.writeByteRotation(buffer, rotation);
-        buffer.writeBoolean(onGround);
-        buffer.writeBoolean(teleported);
+    }
+
+    public enum Flag {
+        GROUND,
+        TELEPORT
     }
 }

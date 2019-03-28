@@ -29,7 +29,7 @@ public class RakNetDatagram extends AbstractReferenceCounted {
     }
 
     @Override
-    public ReferenceCounted touch(Object hint) {
+    public RakNetDatagram touch(Object hint) {
         for (EncapsulatedRakNetPacket packet : packets) {
             packet.touch(hint);
         }

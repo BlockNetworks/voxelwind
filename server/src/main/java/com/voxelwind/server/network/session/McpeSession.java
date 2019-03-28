@@ -19,6 +19,7 @@ import com.voxelwind.server.network.util.CompressionUtil;
 import com.voxelwind.server.network.util.NativeCodeFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
+import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
 import net.md_5.bungee.jni.cipher.BungeeCipher;
 import javax.annotation.Nonnull;

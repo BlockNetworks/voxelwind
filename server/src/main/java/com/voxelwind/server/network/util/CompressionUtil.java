@@ -50,19 +50,12 @@ public class CompressionUtil {
                 int length = (int) Varints.decodeUnsigned(decompressed);
                 ByteBuf data = decompressed.readSlice(length);
 
-                if (data.readableBytes() == 0) {
+                if (!data.isReadable()) {
                     throw new DataFormatException("Contained packet is empty.");
                 }
 
                 NetworkPackage pkg = PacketRegistry.tryDecode(data, PacketType.MCPE, true);
-                if (pkg != null) {
-                    packets.add(pkg);
-                } else {
-                    data.readerIndex(0);
-                    McpeUnknown unknown = new McpeUnknown();
-                    unknown.decode(data);
-                    packets.add(unknown);
-                }
+                packets.add(pkg);
             }
         } catch (DataFormatException e) {
             throw new RuntimeException("Unable to inflate buffer data", e);

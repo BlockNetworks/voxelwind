@@ -58,7 +58,7 @@ public class PacketRegistry {
         MCPE_PACKETS[0x0f] = McpeAddItemEntity.class;
         MCPE_PACKETS[0x10] = McpeAddHangingEntity.class;
         MCPE_PACKETS[0x11] = McpeTakeItemEntity.class;
-        MCPE_PACKETS[0x12] = McpeMoveEntity.class;
+        MCPE_PACKETS[0x12] = McpeMoveEntityAbsolute.class;
         MCPE_PACKETS[0x13] = McpeMovePlayer.class;
         MCPE_PACKETS[0x14] = McpeRiderJump.class;
         MCPE_PACKETS[0x15] = McpeUpdateBlock.class;

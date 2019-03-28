@@ -58,8 +58,8 @@ import com.voxelwind.server.game.permissions.PermissionLevel;
 import com.voxelwind.server.game.serializer.MetadataSerializer;
 import com.voxelwind.server.network.NetworkPackage;
 import com.voxelwind.server.network.mcpe.packets.*;
-import com.voxelwind.server.network.mcpe.util.ActionPermissionFlag;
 import com.voxelwind.server.network.mcpe.util.LevelEventConstants;
+import com.voxelwind.server.network.mcpe.util.WorldFlag;
 import com.voxelwind.server.network.raknet.handler.NetworkPacketHandler;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
@@ -105,6 +105,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         addPlayer.setUsername(session.getAuthenticationProfile().getDisplayName());
         addPlayer.setEntityId(getEntityId());
         addPlayer.setRuntimeEntityId(getEntityId());
+        addPlayer.setPlatformChatId("");
         addPlayer.setPosition(getPosition());
         addPlayer.setVelocity(getMotion());
         addPlayer.setRotation(getRotation());
@@ -112,10 +113,11 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         addPlayer.getMetadata().putAll(getMetadata());
         addPlayer.setFlags(0);
         addPlayer.setCommandPermission(1);
-        addPlayer.setActionPermissions(ActionPermissionFlag.DEFAULT, true);
+        addPlayer.setWorldFlags(WorldFlag.DEFAULT, true);
         addPlayer.setPermissionLevel(PermissionLevel.OPERATOR);
-        addPlayer.setCustomPermissions(0);
+        addPlayer.setCustomFlags(0);
         addPlayer.setUserId(getEntityId());
+        addPlayer.setDeviceId("");
         return addPlayer;
     }
 
@@ -335,8 +337,8 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         settings.setFlags(McpeAdventureSettings.Flag.NO_PVM, !playerData.canPvP() || spectator);
         settings.setCommandPermissions(1);
         settings.setPermissionLevel(PermissionLevel.OPERATOR);
-        settings.setCustomStoredPermissions(0);
-        settings.setActionPermissions(ActionPermissionFlag.DEFAULT, true);
+        settings.setCustomFlags(0);
+        settings.setWorldFlags(WorldFlag.DEFAULT, true);
         settings.setUserId(getEntityId());
 
         session.addToSendQueue(settings);

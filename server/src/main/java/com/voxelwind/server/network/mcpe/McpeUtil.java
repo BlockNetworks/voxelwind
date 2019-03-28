@@ -23,6 +23,7 @@ import com.voxelwind.server.game.level.util.EntityAttribute;
 import com.voxelwind.server.game.level.util.PlayerAttribute;
 import com.voxelwind.server.game.serializer.MetadataSerializer;
 import com.voxelwind.server.network.mcpe.util.CommandOriginData;
+import com.voxelwind.server.network.mcpe.util.EntityLink;
 import com.voxelwind.server.network.mcpe.util.ResourcePackInfo;
 import com.voxelwind.server.network.util.LittleEndianByteBufInputStream;
 import com.voxelwind.server.network.util.LittleEndianByteBufOutputStream;
@@ -131,6 +132,13 @@ public class McpeUtil {
         }
 
         return attributes;
+    }
+
+    public static void writeEntityLink(ByteBuf buf, EntityLink entityLink) {
+        Varints.encodeUnsigned(buf, entityLink.getFrom());
+        Varints.encodeUnsigned(buf, entityLink.getTo());
+        buf.writeByte(entityLink.getType().ordinal());
+        buf.writeBoolean(entityLink.isImmediate());
     }
 
     public static void writeFloatLE(ByteBuf buf, float value) {
