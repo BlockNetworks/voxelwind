@@ -145,6 +145,7 @@ public class PacketRegistry {
         //MCPE_PACKETS[0x66] = McpeServerSettingsRequest.class;
         //MCPE_PACKETS[0x67] = McpeServerSettingsResponse.class;
         //MCPE_PACKETS[0x68] = McpeShowProfile.class;
+        MCPE_PACKETS[0x79] = McpeNetworkChunkPublisherUpdate.class;
 
         QUERY_PACKETS[0x00] = QueryStatistics.class;
         QUERY_PACKETS[0x09] = QueryHandshake.class;
@@ -244,7 +245,7 @@ public class PacketRegistry {
         int id = getId(pkg);
 
         ByteBuf buf = PooledByteBufAllocator.DEFAULT.directBuffer();
-        buf.writeByte((id & 0xFF));
+        buf.writeByte(id);
         pkg.encode(buf);
 
         return buf;

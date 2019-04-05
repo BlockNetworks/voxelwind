@@ -19,6 +19,7 @@ import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
 
 import java.net.InetAddress;

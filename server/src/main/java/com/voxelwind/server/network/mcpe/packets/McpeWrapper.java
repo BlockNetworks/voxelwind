@@ -22,5 +22,6 @@ public class McpeWrapper implements NetworkPackage {
     @Override
     public void encode(ByteBuf buffer) {
         buffer.writeBytes(payload);
+        payload.release();
     }
 }

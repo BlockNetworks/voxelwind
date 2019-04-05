@@ -170,11 +170,11 @@ public class McpeSession {
                     netPackage.getClass().isAnnotationPresent(ForceClearText.class)) {
                 // We hit a un-batchable packet. Send the current batch and then send the un-batchable packet.
                 if (!wrapper.getPackets().isEmpty()) {
-                    internalSendPackage(wrapper);
+                    sendImmediatePackage(wrapper);
                     wrapper = new McpeWrapper();
                 }
 
-                internalSendPackage(netPackage);
+                sendImmediatePackage(netPackage);
 
                 try {
                     // Delay things a tiny bit
@@ -185,8 +185,9 @@ public class McpeSession {
 
                 continue;
             } else if (wrapper.getPackets().size() >= 3) {
+                System.out.println("!!!!!!!!!! Wrapper size > 3");
                 // Reached a per-batch limit on packages, send these packages now
-                internalSendPackage(wrapper);
+                sendImmediatePackage(wrapper);
                 wrapper = new McpeWrapper();
 
                 try {

@@ -16,6 +16,7 @@ import com.voxelwind.nbt.tags.CompoundTag;
 import com.voxelwind.nbt.tags.IntTag;
 import com.voxelwind.nbt.tags.Tag;
 import com.voxelwind.nbt.util.SwappedDataOutputStream;
+import com.voxelwind.nbt.util.Varints;
 import com.voxelwind.server.game.level.chunk.util.FullChunkPacketCreator;
 import com.voxelwind.server.game.serializer.MetadataSerializer;
 import com.voxelwind.server.network.mcpe.packets.McpeFullChunkData;
@@ -25,12 +26,15 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import lombok.Synchronized;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -42,7 +46,7 @@ import java.util.*;
 public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, FullChunkPacketCreator {
     private final Level level;
     private final TIntObjectMap<CompoundTag> serializedBlockEntities = new TIntObjectHashMap<>();
-    private byte[] precompressed;
+    private SoftReference<byte[]> precompressed;
 
     public SectionedChunk(int x, int z, Level level) {
         this(new ChunkSection[16], x, z, level);
@@ -188,16 +192,15 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
 
     @Override
     @Synchronized
-    public McpeWrapper toFullChunkData() {
-        if (precompressed != null) {
-            McpeWrapper wrapper = new McpeWrapper();
-            wrapper.setPayload(Unpooled.directBuffer(precompressed.length).writeBytes(precompressed));
-            return wrapper;
-        }
-
+    public McpeFullChunkData toFullChunkData() {
         McpeFullChunkData data = new McpeFullChunkData();
         data.setChunkX(x);
         data.setChunkZ(z);
+
+        if (precompressed != null && precompressed.get() != null) {
+            data.setData(precompressed.get());
+            return data;
+        }
 
         // Write out block entities first.
         CanWriteToBB blockEntities = null;
@@ -225,43 +228,36 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
             }
         }
 
-        int bufferSize = 1 + 6145 * topBlank + 768 + 2 + nbtSize;
-        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-        buffer.put((byte) topBlank);
+        int bufferSize = 1 + 4096 * topBlank + 768 + 2 + nbtSize;
+        ByteBuf buf  = PooledByteBufAllocator.DEFAULT.buffer(bufferSize);
+        try {
+            buf.markReaderIndex();
+            buf.writeByte((byte) topBlank);
 
-        // Write the chunk sections.
-        for (int i = 0; i < topBlank; i++) {
-            ChunkSection section = sections[i];
-            buffer.put((byte) 0);
-            if (section != null) {
-                buffer.put(section.getIds());
-                buffer.put(section.getData().getData());
-                //buffer.put(section.getSkyLight().getData());
-                //buffer.put(section.getBlockLight().getData());
-            } else {
-                buffer.position(buffer.position() + 6144);
+            for (int i = 0; i < topBlank; i++) {
+                getOrCreateSection(i).writeTo(buf);
+
+                buf.writeBytes(height);
+                buf.writeBytes(biomeId);
+
+                // extra data
+                Varints.writeInt(buf, 0);
+                Varints.writeInt(buf, 0);
+
+                if (blockEntities != null) {
+                    blockEntities.writeTo(buf);
+                }
             }
+
+            byte[] chunkData = new byte[buf.readableBytes()];
+            precompressed = new SoftReference<>(chunkData);
+            buf.readBytes(chunkData);
+            data.setData(precompressed.get());
+        } finally {
+            buf.release();
         }
 
-        buffer.put(height);
-        buffer.put(biomeId);
-
-        // extra data, we have none
-        buffer.putShort((short) 0);
-
-        if (blockEntities != null) {
-            blockEntities.writeTo(buffer);
-        }
-
-        data.setData(buffer.array());
-
-        McpeWrapper wrapper = new McpeWrapper();
-        wrapper.setPayload(CompressionUtil.compressWrapperPackets(data));
-
-        precompressed = new byte[wrapper.getPayload().readableBytes()];
-        wrapper.getPayload().readBytes(precompressed);
-
-        return wrapper;
+        return data;
     }
 
     @Synchronized
@@ -388,8 +384,8 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
             super(8192);
         }
 
-        public void writeTo(ByteBuffer byteBuffer) {
-            byteBuffer.put(buf, 0, count);
+        public void writeTo(ByteBuf buf) {
+            buf.writeBytes(super.buf, 0, super.count);
         }
     }
 

@@ -11,6 +11,7 @@ import com.voxelwind.server.network.raknet.enveloped.DirectAddressedRakNetPacket
 import com.voxelwind.server.network.raknet.util.SentDatagram;
 import com.voxelwind.server.network.raknet.util.SplitPacketHelper;
 import com.voxelwind.server.network.session.SessionConnection;
+import gnu.trove.iterator.TShortObjectIterator;
 import gnu.trove.map.TShortObjectMap;
 import gnu.trove.map.hash.TShortObjectHashMap;
 import io.netty.buffer.ByteBuf;
@@ -162,8 +163,10 @@ public class RakNetSession implements SessionConnection {
 
     private void cleanSplitPackets() {
         synchronized (splitPackets) {
-            for (Iterator<SplitPacketHelper> it = splitPackets.valueCollection().iterator(); it.hasNext(); ) {
-                SplitPacketHelper sph = it.next();
+            TShortObjectIterator<SplitPacketHelper> it = splitPackets.iterator();
+            while (it.hasNext()) {
+                it.advance();
+                SplitPacketHelper sph = it.value();
                 if (sph.expired()) {
                     sph.release();
                     it.remove();

@@ -475,6 +475,11 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
             int currentChunkZ = currentPosition.getFloorZ() >> 4;
             chunks.sort(new AroundPointComparator(currentChunkX, currentChunkZ));
 
+            McpeNetworkChunkPublisherUpdate packet = new McpeNetworkChunkPublisherUpdate();
+            packet.setPosition(getPosition().toInt());
+            packet.setRadius(viewDistance << 4);
+            session.sendImmediatePackage(packet);
+
             for (Chunk chunk : chunks) {
                 session.sendImmediatePackage(((FullChunkPacketCreator) chunk).toFullChunkData());
             }
@@ -1366,6 +1371,7 @@ boolean up = false;
                     entry.setSkin(data.getSkin());
                     entry.setName(player.getName());
                     entry.setXuid(player.getXuid().isPresent() ? player.getXuid().get() : "");
+                    entry.setPlatformChatId("");
                     list.getEntries().add(entry);
                 }
                 session.sendImmediatePackage(list);

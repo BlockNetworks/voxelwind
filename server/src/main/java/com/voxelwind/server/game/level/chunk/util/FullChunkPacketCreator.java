@@ -1,7 +1,7 @@
 package com.voxelwind.server.game.level.chunk.util;
 
-import com.voxelwind.server.network.mcpe.packets.McpeWrapper;
+import com.voxelwind.server.network.mcpe.packets.McpeFullChunkData;
 
 public interface FullChunkPacketCreator {
-    McpeWrapper toFullChunkData();
+    McpeFullChunkData toFullChunkData();
 }

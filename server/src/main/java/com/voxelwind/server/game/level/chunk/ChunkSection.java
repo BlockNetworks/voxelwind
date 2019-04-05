@@ -2,12 +2,14 @@ package com.voxelwind.server.game.level.chunk;
 
 import com.google.common.base.Preconditions;
 import com.voxelwind.server.game.level.util.NibbleArray;
+import io.netty.buffer.ByteBuf;
 
 /**
  * Represents a 16x16x16 section of a chunk (which is 16x256x16).
  */
 public class ChunkSection {
     private static final int SECTION_SIZE = 4096;
+    private static final int CHUNKSECTION_VERSION = 8;
     private final byte[] ids;
     private final NibbleArray data;
     private final NibbleArray skyLight;
@@ -90,6 +92,13 @@ public class ChunkSection {
                 skyLight.copy(),
                 blockLight.copy()
         );
+    }
+
+    public void writeTo(ByteBuf buf) {
+        buf.writeByte(CHUNKSECTION_VERSION);
+        buf.writeByte(getIds().length);
+        buf.writeBytes(getIds());
+        buf.writeBytes(getData().getData());
     }
 
     public boolean isEmpty() {

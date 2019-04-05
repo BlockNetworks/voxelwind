@@ -60,7 +60,7 @@ public class AnvilRegionFile implements Closeable {
         offsets.flip();
         IntBuffer offsetInts = offsets.asIntBuffer();
 
-        for (int i = 0; i < SECTOR_INTS; ++i) {
+        for (int i = 0; i < SECTOR_INTS; i++) {
             this.offsets[i] = offsetInts.get();
             int sectorNumber = this.offsets[i] >> 8;
             int occupiedSectors = this.offsets[i] & 0xFF;

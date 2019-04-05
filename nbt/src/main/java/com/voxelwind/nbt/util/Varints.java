@@ -7,6 +7,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public class Varints {
+    public static void writeInt(ByteBuf buffer, int integer) {
+        encodeUnsigned(buffer, (integer << 1) ^ (integer >> 31));
+    }
+
     public static void encodeUnsigned(DataOutput output, long value) throws IOException {
         while (true) {
             if ((value & ~0x7FL) == 0) {

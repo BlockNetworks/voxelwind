@@ -34,6 +34,7 @@ public class McpePlayerList implements NetworkPackage {
                 McpeUtil.writeVarintLengthString(buffer, entry.getName());
                 McpeUtil.writeSkin(buffer, entry.getSkin());
                 McpeUtil.writeVarintLengthString(buffer, entry.getXuid());
+                McpeUtil.writeVarintLengthString(buffer, entry.getPlatformChatId());
             }
         }
     }
@@ -45,6 +46,7 @@ public class McpePlayerList implements NetworkPackage {
         private long entityId;
         private String name;
         private Skin skin;
+        private String platformChatId;
     }
 
     @Override

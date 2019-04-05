@@ -88,6 +88,12 @@ public class McpeUtil {
         return new Vector3i(x, y, z);
     }
 
+    public static void writeVector3i(ByteBuf buf, Vector3i vector3i) {
+        Varints.writeInt(buf, vector3i.getX());
+        Varints.writeInt(buf, vector3i.getY());
+        Varints.writeInt(buf, vector3i.getZ());
+    }
+
     public static void writeVector3f(ByteBuf buf, Vector3f vector3f) {
         writeFloatLE(buf, vector3f.getX());
         writeFloatLE(buf, vector3f.getY());

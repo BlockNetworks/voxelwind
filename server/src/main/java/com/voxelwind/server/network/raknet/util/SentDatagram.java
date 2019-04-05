@@ -32,7 +32,7 @@ public class SentDatagram {
     }
 
     public void tryRelease() {
-        if (released || datagram.refCnt() == 1) {
+        if (released /*|| datagram.refCnt() == 1*/) {
             return;
         }
 
