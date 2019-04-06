@@ -27,10 +27,7 @@ import com.voxelwind.server.game.level.chunk.generator.DiscoFloorChunkGenerator;
 import com.voxelwind.server.game.level.chunk.generator.SimpleFlatworldChunkGenerator;
 import com.voxelwind.server.game.level.chunk.provider.ChunkProvider;
 import com.voxelwind.server.game.level.chunk.provider.LevelDataProvider;
-import com.voxelwind.server.game.level.manager.LevelBlockManager;
-import com.voxelwind.server.game.level.manager.LevelChunkManager;
-import com.voxelwind.server.game.level.manager.LevelEntityManager;
-import com.voxelwind.server.game.level.manager.LevelPacketManager;
+import com.voxelwind.server.game.level.manager.*;
 import com.voxelwind.server.game.serializer.MetadataSerializer;
 import com.voxelwind.server.network.mcpe.packets.McpeBlockEntityData;
 import com.voxelwind.server.network.mcpe.packets.McpeUpdateBlock;
@@ -82,6 +79,7 @@ public class VoxelwindLevel implements Level {
     private final LevelEntityManager entityManager;
     private final LevelPacketManager packetManager;
     private final LevelBlockManager blockManager;
+    private final LevelPaletteManager paletteManager;
     private long currentTick;
     private final Server server;
 
@@ -94,6 +92,7 @@ public class VoxelwindLevel implements Level {
         this.entityManager = new LevelEntityManager(this);
         this.packetManager = new LevelPacketManager(this);
         this.blockManager = new LevelBlockManager(this);
+        this.paletteManager = new LevelPaletteManager();
         this.dataProvider = dataProvider;
 
         entityManager.registerSystem(DeathSystem.GENERIC);
@@ -118,6 +117,10 @@ public class VoxelwindLevel implements Level {
 
     public LevelPacketManager getPacketManager() {
         return packetManager;
+    }
+
+    public LevelPaletteManager getPaletteManager() {
+        return paletteManager;
     }
 
     public LevelBlockManager getBlockManager() {

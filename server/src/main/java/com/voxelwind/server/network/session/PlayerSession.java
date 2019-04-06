@@ -270,6 +270,7 @@ public class PlayerSession extends LivingEntity implements Player, InventoryObse
         startGame.setTrial(false);
         startGame.setCurrentTick(0);
         startGame.setEnchantmentSeed(0);
+        startGame.setCachedPalette(getLevel().getPaletteManager().getCachedPallete());
         startGame.setMultiplayerCorrelationId("");
         session.addToSendQueue(startGame);
 

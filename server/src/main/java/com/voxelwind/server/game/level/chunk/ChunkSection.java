@@ -1,6 +1,7 @@
 package com.voxelwind.server.game.level.chunk;
 
 import com.google.common.base.Preconditions;
+import com.voxelwind.server.game.level.util.BlockStorage;
 import com.voxelwind.server.game.level.util.NibbleArray;
 import io.netty.buffer.ByteBuf;
 
@@ -10,71 +11,52 @@ import io.netty.buffer.ByteBuf;
 public class ChunkSection {
     private static final int SECTION_SIZE = 4096;
     private static final int CHUNKSECTION_VERSION = 8;
-    private final byte[] ids;
-    private final NibbleArray data;
+    private final BlockStorage[] storage;
     private final NibbleArray skyLight;
     private final NibbleArray blockLight;
 
     public ChunkSection() {
-        this.ids = new byte[SECTION_SIZE];
-        this.data = new NibbleArray(SECTION_SIZE);
+        this.storage = new BlockStorage[]{new BlockStorage(), new BlockStorage()};
         this.skyLight = new NibbleArray(SECTION_SIZE);
         this.blockLight = new NibbleArray(SECTION_SIZE);
     }
 
-    public ChunkSection(byte[] ids, NibbleArray data, NibbleArray skyLight, NibbleArray blockLight) {
-        this.ids = ids;
-        this.data = data;
+    public ChunkSection(BlockStorage[] storage, NibbleArray skyLight, NibbleArray blockLight) {
+        this.storage = storage;
         this.skyLight = skyLight;
         this.blockLight = blockLight;
     }
 
-    public int getBlockId(int x, int y, int z) {
+    public int getBlockId(int x, int y, int z, int layer) {
         checkBounds(x, y, z);
-        return ids[anvilBlockPosition(x, y, z)] & 0xff;
-    }
-
-    public byte getBlockData(int x, int y, int z) {
-        checkBounds(x, y, z);
-        return data.get(anvilBlockPosition(x, y, z));
+        checkLayer(layer);
+        return storage[layer].getBlockId(blockPosition(x, y, z));
     }
 
     public byte getSkyLight(int x, int y, int z) {
         checkBounds(x, y, z);
-        return skyLight.get(anvilBlockPosition(x, y, z));
+        return skyLight.get(blockPosition(x, y, z));
     }
 
     public byte getBlockLight(int x, int y, int z) {
         checkBounds(x, y, z);
-        return blockLight.get(anvilBlockPosition(x, y, z));
+        return blockLight.get(blockPosition(x, y, z));
     }
 
-    public void setBlockId(int x, int y, int z, byte id) {
+    public void setBlockId(int x, int y, int z, int layer, int id) {
         checkBounds(x, y, z);
-        ids[anvilBlockPosition(x, y, z)] = id;
-    }
-
-    public void setBlockData(int x, int y, int z, byte data) {
-        checkBounds(x, y, z);
-        this.data.set(anvilBlockPosition(x, y, z), data);
+        checkLayer(layer);
+        storage[layer].setBlockId(blockPosition(x, y, z), id);
     }
 
     public void setSkyLight(int x, int y, int z, byte val) {
         checkBounds(x, y, z);
-        skyLight.set(anvilBlockPosition(x, y, z), val);
+        skyLight.set(blockPosition(x, y, z), val);
     }
 
     public void setBlockLight(int x, int y, int z, byte val) {
         checkBounds(x, y, z);
-        blockLight.set(anvilBlockPosition(x, y, z), val);
-    }
-
-    public byte[] getIds() {
-        return ids;
-    }
-
-    public NibbleArray getData() {
-        return data;
+        blockLight.set(blockPosition(x, y, z), val);
     }
 
     public NibbleArray getSkyLight() {
@@ -85,29 +67,37 @@ public class ChunkSection {
         return blockLight;
     }
 
-    public ChunkSection copy() {
-        return new ChunkSection(
-                ids.clone(),
-                data.copy(),
-                skyLight.copy(),
-                blockLight.copy()
-        );
+    void writeTo(ByteBuf buf){
+        buf.writeByte(CHUNKSECTION_VERSION);
+        buf.writeByte(storage.length);
+        for (BlockStorage blockStorage : storage) {
+            blockStorage.writeTo(buf);
+        }
     }
 
-    public void writeTo(ByteBuf buf) {
-        buf.writeByte(CHUNKSECTION_VERSION);
-        buf.writeByte(getIds().length);
-        buf.writeBytes(getIds());
-        buf.writeBytes(getData().getData());
+    public ChunkSection copy() {
+        BlockStorage[] storage = new BlockStorage[this.storage.length];
+        for (int i = 0; i < storage.length; i++) {
+            storage[i] = this.storage[i].copy();
+        }
+        return new ChunkSection(storage, skyLight.copy(), blockLight.copy());
     }
 
     public boolean isEmpty() {
-        for (byte id : ids) {
-            if (id != 0) {
+        for (BlockStorage blockStorage : storage) {
+            if (!blockStorage.isEmpty()) {
                 return false;
             }
         }
         return true;
+    }
+
+    private void checkLayer(int layer) {
+        Preconditions.checkArgument(layer >= 0 && layer <= storage.length);
+    }
+
+    private static int blockPosition(int x, int y, int z) {
+        return (x << 8) + (z << 4) + y;
     }
 
     private static void checkBounds(int x, int y, int z) {

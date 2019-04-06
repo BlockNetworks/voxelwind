@@ -17,6 +17,8 @@ import com.voxelwind.nbt.tags.IntTag;
 import com.voxelwind.nbt.tags.Tag;
 import com.voxelwind.nbt.util.SwappedDataOutputStream;
 import com.voxelwind.nbt.util.Varints;
+import com.voxelwind.server.VoxelwindServer;
+import com.voxelwind.server.game.level.VoxelwindLevel;
 import com.voxelwind.server.game.level.chunk.util.FullChunkPacketCreator;
 import com.voxelwind.server.game.serializer.MetadataSerializer;
 import com.voxelwind.server.network.mcpe.packets.McpeFullChunkData;
@@ -79,9 +81,8 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
         Preconditions.checkNotNull(state, "state");
         checkPosition(x, y, z);
 
-        ChunkSection section = getOrCreateSection(y / 16);
-        section.setBlockId(x, y % 16, z, (byte) state.getBlockType().getId());
-        section.setBlockData(x, y % 16, z, (byte) MetadataSerializer.serializeMetadata(state));
+        ChunkSection section = getOrCreateSection(y >> 4);
+        section.setBlockId(x, y % 16, z, 0, ((VoxelwindLevel) level).getPaletteManager().getOrCreateRuntimeId(state));
 
         if (shouldRecalculateLight) {
             // Recalculate the height map and lighting for this chunk section.
@@ -133,7 +134,7 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
             ChunkSection section = sections[i];
             if (section != null) {
                 for (int j = 15; j >= 0; j--) {
-                    if (section.getBlockId(x, j, z) != 0) {
+                    if (section.getBlockId(x, j, z, 0) != 0) {
                         return j + (i * 16);
                     }
                 }
@@ -156,7 +157,7 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
         // From the top, however...
         boolean blocked = false;
         for (int y = maxHeight; y > 0; y--) {
-            BlockType type = BlockTypes.forId(sections[y / 16].getBlockId(x, y % 16, z));
+            BlockType type = BlockTypes.forId(sections[y / 16].getBlockId(x, y % 16, z, 0));
             byte light = 15;
             if (!blocked) {
                 if (!type.isTransparent()) {
@@ -293,7 +294,7 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
         TLongSet visitedRemove = new TLongHashSet();
 
         ChunkSection section = getOrCreateSection(y / 16);
-        BlockType ourType = BlockTypes.forId(section.getBlockId(x, y % 16, z));
+        BlockType ourType = BlockTypes.forId(section.getBlockId(x, y % 16, z, 0));
         byte currentBlockLight = section.getBlockLight(x, y % 16, z);
         byte newBlockLight = (byte) ourType.emitsLight();
 
@@ -325,7 +326,8 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
         while ((toSpread = spread.poll()) != null) {
             ChunkSection cs = getOrCreateSection(toSpread.getY() / 16);
             byte adjustedLight = (byte) (cs.getBlockLight(toSpread.getX(), toSpread.getY() % 16, toSpread.getZ())
-                                - BlockTypes.forId(cs.getBlockId(toSpread.getX(), toSpread.getY() % 16, toSpread.getZ())).filtersLight());
+                                - ((VoxelwindLevel) level).getPaletteManager().getBlockState(cs.getBlockId(toSpread.getX(), toSpread.getY() & 15, toSpread.getZ(), 0))
+                                .orElseThrow(() -> new IllegalStateException("Runtime ID is not registered")).getBlockType().filtersLight());
 
             if(adjustedLight >= 1){
                 computeSpreadBlockLight(toSpread.sub(1, 0, 0), adjustedLight, spread, visitedSpread);

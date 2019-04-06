@@ -7,11 +7,14 @@ import com.voxelwind.api.game.level.Chunk;
 import com.voxelwind.api.game.level.ChunkSnapshot;
 import com.voxelwind.api.game.level.Level;
 import com.voxelwind.api.game.level.block.BlockSnapshot;
+import com.voxelwind.api.game.level.block.BlockState;
 import com.voxelwind.api.game.level.block.BlockType;
 import com.voxelwind.api.game.level.block.BlockTypes;
 import com.voxelwind.api.game.level.blockentities.BlockEntity;
+import com.voxelwind.server.game.level.VoxelwindLevel;
 import com.voxelwind.server.game.level.block.BasicBlockState;
 import com.voxelwind.server.game.level.block.VoxelwindBlock;
+import com.voxelwind.server.game.level.block.VoxelwindBlockStateBuilder;
 import com.voxelwind.server.game.serializer.MetadataSerializer;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
@@ -70,15 +73,15 @@ public class SectionedChunkSnapshot implements ChunkSnapshot {
             return new VoxelwindBlock(level, chunk, full, new BasicBlockState(BlockTypes.AIR, null, null));
         }
 
-        BlockType type = BlockTypes.forId(section.getBlockId(x, y % 16, z));
-        Optional<Metadata> createdData;
-        if (type.getMetadataClass() != null) {
-            createdData = Optional.of(MetadataSerializer.deserializeMetadata(type, section.getBlockData(x, y % 16, z)));
-        } else {
-            createdData = Optional.empty();
+        Optional<BlockState> blockState = ((VoxelwindLevel) level).getPaletteManager().getBlockState(section.getBlockId(x, y & 15, z, 0));
+        BlockState state = blockState.orElse(new VoxelwindBlockStateBuilder().blockType(BlockTypes.AIR).build());
+        BlockEntity blockEntity = blockEntities.get(xyzIdx(x, y, z));
+
+        if (blockEntity != null) {
+            state = new BasicBlockState(state.getBlockType(), state.getBlockData(), blockEntity);
         }
 
-        return new VoxelwindBlock(level, chunk, full, new BasicBlockState(type, createdData.orElse(null), blockEntities.get(xyzIdx(x, y, z))));
+        return new VoxelwindBlock(level, chunk, full, state);
     }
 
     @Override

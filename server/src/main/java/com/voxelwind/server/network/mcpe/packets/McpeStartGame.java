@@ -71,7 +71,7 @@ public class McpeStartGame implements NetworkPackage {
     private String multiplayerCorrelationId; //44 total
 
     private ByteBuf cachedPalette;
-    private Collection<Object> paletteEntries = new ArrayDeque<>();
+    private Collection<RuntimeEntry> paletteEntries = new ArrayDeque<>();
 
     @Override
     public void decode(ByteBuf buffer) {
@@ -137,24 +137,8 @@ public class McpeStartGame implements NetworkPackage {
         buffer.writeLongLE(currentTick);
         Varints.encodeSigned(buffer, enchantmentSeed);
 
-        InputStream stream = VoxelwindServer.class.getClassLoader().getResourceAsStream("runtimeid_table.json");
-        if (stream == null) {
-            throw new AssertionError("Static RuntimeID table not found");
-        }
-        CollectionType type = VoxelwindServer.MAPPER.getTypeFactory().constructCollectionType(ArrayList.class, RuntimeEntry.class);
-        ArrayList<RuntimeEntry> entries;
-        try {
-            entries = VoxelwindServer.MAPPER.readValue(stream, type);
-        } catch (Exception e) {
-            throw new AssertionError("Could not load RuntimeID table");
-        }
-
-        Varints.encodeUnsigned(buffer, entries.size());
-
-        for (RuntimeEntry entry : entries) {
-            McpeUtil.writeVarintLengthString(buffer, entry.name);
-            buffer.writeShortLE(entry.data);
-        }
+        buffer.writeBytes(cachedPalette);
+        cachedPalette.release();
 
         McpeUtil.writeVarintLengthString(buffer, multiplayerCorrelationId);
     }
