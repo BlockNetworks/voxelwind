@@ -1,5 +1,6 @@
 package com.voxelwind.nbt.io;
 
+import com.voxelwind.nbt.io.util.NBTReaders;
 import com.voxelwind.nbt.tags.CompoundTag;
 import com.voxelwind.nbt.tags.StringTag;
 import com.voxelwind.nbt.tags.Tag;
@@ -38,7 +39,7 @@ public class NBTReaderTest {
         }
 
         Tag readTag;
-        try (NBTReader reader = new NBTReader(new DataInputStream(Files.newInputStream(Paths.get(path))), NBTEncoding.MCPE_0_16_NETWORK)) {
+        try (NBTReader reader = new NBTReader(new DataInputStream(Files.newInputStream(Paths.get(path))), NBTEncoding.NOTCHIAN)) {
             readTag = reader.readTag();
         }
 

@@ -26,7 +26,7 @@ public class McpeBlockEntityData implements NetworkPackage {
     @Override
     public void encode(ByteBuf buffer) {
         McpeUtil.writeBlockCoords(buffer, position);
-        try (NBTWriter writer = new NBTWriter(new LittleEndianByteBufOutputStream(buffer), NBTEncoding.MCPE_0_16_NETWORK)) {
+        try (NBTWriter writer = new NBTWriter(new LittleEndianByteBufOutputStream(buffer))) {
             writer.write(blockEntityData);
         } catch (IOException e) {
             throw new RuntimeException(e);

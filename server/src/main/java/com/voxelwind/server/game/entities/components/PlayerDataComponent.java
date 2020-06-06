@@ -3,11 +3,14 @@ package com.voxelwind.server.game.entities.components;
 import com.google.common.base.Preconditions;
 import com.voxelwind.api.game.entities.components.PlayerData;
 import com.voxelwind.api.server.Skin;
+import com.voxelwind.api.server.SkinImage;
 import com.voxelwind.api.server.player.GameMode;
 import com.voxelwind.server.network.session.PlayerSession;
+import com.voxelwind.server.network.session.auth.ClientData;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
 
 public class PlayerDataComponent implements PlayerData {
     private volatile boolean gamemodeTouched = false;
@@ -31,12 +34,13 @@ public class PlayerDataComponent implements PlayerData {
     private volatile boolean muted = false;
 
     public PlayerDataComponent(PlayerSession player) {
+        ClientData clientData = player.getMcpeSession().getClientData();
         this.skin = new Skin(
-                player.getMcpeSession().getClientData().getSkinId(),
-                player.getMcpeSession().getClientData().getSkinData(),
-                player.getMcpeSession().getClientData().getCapeData(),
-                player.getMcpeSession().getClientData().getSkinGeometryName(),
-                player.getMcpeSession().getClientData().getSkinGeometry()
+                clientData.getSkinId(),
+                clientData.getSkinGeometryName(),
+                new SkinImage(clientData.getSkinImageWidth(), clientData.getSkinImageHeight(), clientData.getSkinData()),
+                new SkinImage(clientData.getCapeImageWidth(), clientData.getCapeImageHeight(), clientData.getCapeData()),
+                new String(clientData.getSkinGeometry(), StandardCharsets.UTF_8)
         );
     }
 

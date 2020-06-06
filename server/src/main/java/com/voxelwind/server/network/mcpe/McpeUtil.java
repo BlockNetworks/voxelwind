@@ -9,6 +9,7 @@ import com.voxelwind.api.game.item.ItemType;
 import com.voxelwind.api.game.item.ItemTypes;
 import com.voxelwind.api.game.level.block.BlockTypes;
 import com.voxelwind.api.server.Skin;
+import com.voxelwind.api.server.SkinImage;
 import com.voxelwind.api.server.player.TranslatedMessage;
 import com.voxelwind.api.util.Rotation;
 import com.voxelwind.nbt.io.NBTReader;
@@ -177,17 +178,28 @@ public class McpeUtil {
     }
 
     public static void writeSkin(ByteBuf buf, Skin skin) {
-        byte[] skinData = skin.getSkinData();
-        byte[] capeData = skin.getCapeData();
-        byte[] geometryData = skin.getGeometryData();
         writeVarintLengthString(buf, skin.getSkinId());
-        Varints.encodeUnsigned(buf, skinData.length);
-        buf.writeBytes(skinData);
-        Varints.encodeUnsigned(buf, capeData.length);
-        buf.writeBytes(capeData);
-        writeVarintLengthString(buf, skin.getGeometryName());
-        Varints.encodeUnsigned(buf, geometryData.length);
-        buf.writeBytes(geometryData);
+        writeVarintLengthString(buf, skin.getSkinResourcePatch());
+        writeSkinImage(buf, skin.getSkinData());
+        buf.writeIntLE(0); // animations size
+        writeSkinImage(buf, skin.getCapeData());
+        writeVarintLengthString(buf, skin.getGeometryData());
+        writeVarintLengthString(buf, ""); // animation data
+        buf.writeBoolean(skin.isPremium());
+        buf.writeBoolean(skin.isPersona());
+        buf.writeBoolean(skin.isCapeOnClassic());
+        writeVarintLengthString(buf, skin.getCapeId());
+        writeVarintLengthString(buf, skin.getFullSkinId());
+        writeVarintLengthString(buf, "wide");
+        writeVarintLengthString(buf, "#0");
+        buf.writeIntLE(0); // persona pieces size
+        buf.writeIntLE(0); // persona tints size
+    }
+
+    public static void writeSkinImage(ByteBuf buf, SkinImage image) {
+        buf.writeIntLE(image.getWidth());
+        buf.writeIntLE(image.getHeight());
+        writeByteArray(buf, image.getData());
     }
 
     public static TranslatedMessage readTranslatedMessage(ByteBuf buf) {
@@ -314,6 +326,17 @@ public class McpeUtil {
         buf.writeByte(rotationAngleToByte(rotation.getPitch()));
         buf.writeByte(rotationAngleToByte(rotation.getHeadYaw()));
         buf.writeByte(rotationAngleToByte(rotation.getYaw()));
+    }
+
+    public static byte[] readByteArray(ByteBuf buf) {
+        byte[] bytes = new byte[(int) Varints.decodeUnsigned(buf)];
+        buf.readBytes(bytes);
+        return bytes;
+    }
+
+    public static void writeByteArray(ByteBuf buf, byte[] bytes) {
+        Varints.encodeUnsigned(buf, bytes.length);
+        buf.writeBytes(bytes);
     }
 
     private static byte rotationAngleToByte(float angle) {

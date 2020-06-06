@@ -1,9 +1,10 @@
 package com.voxelwind.nbt.util;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class SwappedDataOutputStream implements DataOutput, Closeable {
-    private final DataOutputStream stream;
+    protected final DataOutputStream stream;
 
     public SwappedDataOutputStream(OutputStream stream) {
         this.stream = new DataOutputStream(stream);
@@ -85,6 +86,8 @@ public class SwappedDataOutputStream implements DataOutput, Closeable {
 
     @Override
     public void writeUTF(String s) throws IOException {
-        stream.writeUTF(s);
+        byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+        writeShort(bytes.length);
+        write(bytes);
     }
 }

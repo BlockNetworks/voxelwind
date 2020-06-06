@@ -7,8 +7,8 @@ import java.util.Arrays;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VersionUtil {
-    private static final int BROADCAST_PROTOCOL_VERSION = 332;
-    private static final int[] COMPATIBLE_PROTOCOL_VERSIONS = new int[]{332};
+    private static final int BROADCAST_PROTOCOL_VERSION = 390;
+    private static final int[] COMPATIBLE_PROTOCOL_VERSIONS = new int[]{390};
 
     public static int[] getCompatibleProtocolVersions() {
         return COMPATIBLE_PROTOCOL_VERSIONS.clone();
@@ -24,8 +24,8 @@ public class VersionUtil {
 
     public static String getHumanVersionName(int protocolVersion) {
         switch (protocolVersion) {
-            case 332:
-                return "1.9.0";
+            case 390:
+                return "1.14.60";
         }
         return null;
     }

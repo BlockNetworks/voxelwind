@@ -1,5 +1,7 @@
-package com.voxelwind.nbt.io;
+package com.voxelwind.nbt.io.util;
 
+import com.voxelwind.nbt.io.NBTReader;
+import com.voxelwind.nbt.util.NetworkDataInputStream;
 import com.voxelwind.nbt.util.SwappedDataInputStream;
 
 import java.io.DataInputStream;
@@ -15,5 +17,10 @@ public class NBTReaders {
     public static NBTReader createBigEndianReader(InputStream stream) {
         Objects.requireNonNull(stream, "stream");
         return new NBTReader(new DataInputStream(stream));
+    }
+
+    public static NBTReader createNetworkReader(InputStream stream) {
+        Objects.requireNonNull(stream, "stream");
+        return new NBTReader(new NetworkDataInputStream(stream));
     }
 }

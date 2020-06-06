@@ -7,6 +7,7 @@ import lombok.Value;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.awt.image.BufferedImage;
+import java.util.UUID;
 
 /**
  * Represents a player's skin.
@@ -14,16 +15,31 @@ import java.awt.image.BufferedImage;
 @Value
 @Nonnull
 public class Skin {
-    @NonNull
     private final String skinId;
-    @NonNull
-    private final byte[] skinData;
-    @NonNull
-    private final byte[] capeData;
-    @NonNull
     private final String geometryName;
-    @NonNull
-    private final byte[] geometryData;
+    private final String skinResourcePatch;
+    private final SkinImage skinData;
+    private final SkinImage capeData;
+    private final String geometryData;
+    private final boolean premium;
+    private final boolean persona;
+    private final boolean capeOnClassic;
+    private final String capeId;
+    private final String fullSkinId;
+
+    public Skin(String skinId, String geometryName, SkinImage skinImage, SkinImage capeImage, String geometryData) {
+        this.skinId = skinId;
+        this.geometryName = geometryName;
+        this.skinResourcePatch = convertLegacyGeometryName(geometryName);
+        this.skinData = skinImage;
+        this.capeData = capeImage;
+        this.geometryData = geometryData;
+        this.premium = false;
+        this.persona = false;
+        this.capeOnClassic = false;
+        this.capeId = "";
+        this.fullSkinId = UUID.randomUUID().toString();
+    }
 
     @Nonnull
     @ParametersAreNonnullByDefault
@@ -44,6 +60,10 @@ public class Skin {
             }
         }
 
-        return new Skin("Standard_Custom", mcpeTexture, null, "geometry.humanoid.custom", null);
+            return new Skin("Standard_Custom", "geometry.humanoid.custom", SkinImage.create(image), new SkinImage(0, 0, new byte[0]), "");
+    }
+
+    private static String convertLegacyGeometryName(String geometryName) {
+        return "{\"geometry\" : {\"default\" : \"" + geometryName + "\"}}";
     }
 }

@@ -15,6 +15,7 @@ import com.voxelwind.server.game.level.VoxelwindLevel;
 import com.voxelwind.server.game.level.block.BasicBlockState;
 import com.voxelwind.server.game.level.block.VoxelwindBlock;
 import com.voxelwind.server.game.level.block.VoxelwindBlockStateBuilder;
+import com.voxelwind.server.game.level.util.PaletteManager;
 import com.voxelwind.server.game.serializer.MetadataSerializer;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
@@ -73,7 +74,7 @@ public class SectionedChunkSnapshot implements ChunkSnapshot {
             return new VoxelwindBlock(level, chunk, full, new BasicBlockState(BlockTypes.AIR, null, null));
         }
 
-        Optional<BlockState> blockState = ((VoxelwindLevel) level).getPaletteManager().getBlockState(section.getBlockId(x, y & 15, z, 0));
+        Optional<BlockState> blockState = PaletteManager.get().getBlockState(section.getBlockId(x, y & 15, z, 0));
         BlockState state = blockState.orElse(new VoxelwindBlockStateBuilder().blockType(BlockTypes.AIR).build());
         BlockEntity blockEntity = blockEntities.get(xyzIdx(x, y, z));
 

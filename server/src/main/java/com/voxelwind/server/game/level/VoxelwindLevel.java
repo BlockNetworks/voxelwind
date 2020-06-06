@@ -79,7 +79,6 @@ public class VoxelwindLevel implements Level {
     private final LevelEntityManager entityManager;
     private final LevelPacketManager packetManager;
     private final LevelBlockManager blockManager;
-    private final LevelPaletteManager paletteManager;
     private long currentTick;
     private final Server server;
 
@@ -92,7 +91,6 @@ public class VoxelwindLevel implements Level {
         this.entityManager = new LevelEntityManager(this);
         this.packetManager = new LevelPacketManager(this);
         this.blockManager = new LevelBlockManager(this);
-        this.paletteManager = new LevelPaletteManager();
         this.dataProvider = dataProvider;
 
         entityManager.registerSystem(DeathSystem.GENERIC);
@@ -117,10 +115,6 @@ public class VoxelwindLevel implements Level {
 
     public LevelPacketManager getPacketManager() {
         return packetManager;
-    }
-
-    public LevelPaletteManager getPaletteManager() {
-        return paletteManager;
     }
 
     public LevelBlockManager getBlockManager() {

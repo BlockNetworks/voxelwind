@@ -1,6 +1,7 @@
 package com.voxelwind.server.network.mcpe.packets;
 
 import com.voxelwind.api.server.Skin;
+import com.voxelwind.api.server.SkinImage;
 import com.voxelwind.nbt.util.Varints;
 import com.voxelwind.server.network.NetworkPackage;
 import com.voxelwind.server.network.mcpe.McpeUtil;
@@ -32,9 +33,18 @@ public class McpePlayerList implements NetworkPackage {
             if (type == 0) {
                 Varints.encodeSignedLong(buffer, entry.getEntityId());
                 McpeUtil.writeVarintLengthString(buffer, entry.getName());
-                McpeUtil.writeSkin(buffer, entry.getSkin());
                 McpeUtil.writeVarintLengthString(buffer, entry.getXuid());
                 McpeUtil.writeVarintLengthString(buffer, entry.getPlatformChatId());
+                buffer.writeIntLE(entry.getBuildPlatform());
+                McpeUtil.writeSkin(buffer, new Skin("Standard_Custom", "geometry.humanoid.custom",
+                        new SkinImage(0, 0, new byte[0]), new SkinImage(0, 0, new byte[0]), ""));
+                buffer.writeBoolean(entry.isTeacher());
+                buffer.writeBoolean(entry.isHost());
+            }
+        }
+        if(type == 0) {
+            for(Entry entry : entries) {
+                buffer.writeBoolean(entry.isTrustedSkin());
             }
         }
     }
@@ -47,6 +57,10 @@ public class McpePlayerList implements NetworkPackage {
         private String name;
         private Skin skin;
         private String platformChatId;
+        private int buildPlatform;
+        private boolean teacher;
+        private boolean host;
+        private boolean trustedSkin;
     }
 
     @Override

@@ -17,7 +17,8 @@ public enum TagType {
     STRING(StringTag.class),
     LIST(ListTag.class),
     COMPOUND(CompoundTag.class),
-    INT_ARRAY(IntArrayTag.class);
+    INT_ARRAY(IntArrayTag.class),
+    LONG_ARRAY(LongArrayTag.class);
 
     private final Class<? extends Tag> tagClass;
 

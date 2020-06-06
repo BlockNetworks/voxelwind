@@ -1,7 +1,7 @@
 package com.voxelwind.server.game.level.chunk.provider.anvil.util;
 
 import com.voxelwind.nbt.io.NBTReader;
-import com.voxelwind.nbt.io.NBTReaders;
+import com.voxelwind.nbt.io.util.NBTReaders;
 import com.voxelwind.nbt.tags.CompoundTag;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;

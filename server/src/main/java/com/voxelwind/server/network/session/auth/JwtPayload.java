@@ -1,8 +1,10 @@
 package com.voxelwind.server.network.session.auth;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class JwtPayload {
     private int exp;
     private UserAuthenticationProfile extraData;

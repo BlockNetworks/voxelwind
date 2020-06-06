@@ -3,7 +3,7 @@ package com.voxelwind.server.game.level.chunk.provider.anvil;
 import com.voxelwind.api.game.level.Chunk;
 import com.voxelwind.api.game.level.Level;
 import com.voxelwind.nbt.io.NBTReader;
-import com.voxelwind.nbt.io.NBTReaders;
+import com.voxelwind.nbt.io.util.NBTReaders;
 import com.voxelwind.nbt.tags.CompoundTag;
 import com.voxelwind.nbt.tags.Tag;
 import com.voxelwind.server.game.level.chunk.provider.ChunkProvider;

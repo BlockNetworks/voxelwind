@@ -7,6 +7,7 @@ import com.voxelwind.server.game.level.VoxelwindLevel;
 import com.voxelwind.server.game.level.chunk.ChunkSection;
 import com.voxelwind.server.game.level.chunk.SectionedChunk;
 import com.voxelwind.server.game.level.util.NibbleArray;
+import com.voxelwind.server.game.level.util.PaletteManager;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.experimental.UtilityClass;
 
@@ -36,7 +37,7 @@ public class AnvilConversion {
                 for (int z = 0; z < 16; z++) {
                     for (int y = 0; y < 16; y++) {
                         int pos = anvilBlockPosition(x, y, z);
-                        section.setBlockId(x, y, z, 0, ((VoxelwindLevel) level).getPaletteManager().fromLegacy(blockIds[pos] & 0xff, data.get(pos)));
+                        section.setBlockId(x, y, z, 0, PaletteManager.get().fromLegacy(blockIds[pos] & 0xff, data.get(pos)));
                         section.setSkyLight(x, y, z, skyLight.get(pos));
                         section.setBlockLight(x, y, z, blockLight.get(pos));
                     }

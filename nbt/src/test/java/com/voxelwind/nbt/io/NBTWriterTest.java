@@ -24,7 +24,7 @@ public class NBTWriterTest {
         Map<String, Tag<?>> compoundMap = new HashMap<>();
         compoundMap.put("name", new StringTag("name", "voxelwind-nbt"));
         CompoundTag writtenTag = new CompoundTag("Test file", compoundMap);
-        selfVerify(writtenTag, NBTEncoding.MCPE_0_16_NETWORK);
+        selfVerify(writtenTag, NBTEncoding.NOTCHIAN);
     }
 
     @Test
@@ -36,7 +36,7 @@ public class NBTWriterTest {
     @Test
     public void everyTagSelfConsistencyTestMcpe016Network() throws Exception {
         CompoundTag cornucopia = generateCornucopia();
-        selfVerify(cornucopia, NBTEncoding.MCPE_0_16_NETWORK);
+        selfVerify(cornucopia, NBTEncoding.NOTCHIAN);
     }
 
     private CompoundTag generateCornucopia() {

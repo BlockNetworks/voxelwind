@@ -1,9 +1,10 @@
 package com.voxelwind.nbt.util;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class SwappedDataInputStream implements DataInput, Closeable {
-    private final DataInputStream stream;
+    protected final DataInputStream stream;
 
     public SwappedDataInputStream(InputStream stream) {
         this.stream = new DataInputStream(stream);
@@ -55,7 +56,7 @@ public class SwappedDataInputStream implements DataInput, Closeable {
 
     @Override
     public int readUnsignedShort() throws IOException {
-        return Integer.reverseBytes(stream.readUnsignedShort());
+        return Short.toUnsignedInt(Short.reverseBytes(stream.readShort()));
     }
 
     @Override
@@ -90,6 +91,8 @@ public class SwappedDataInputStream implements DataInput, Closeable {
 
     @Override
     public String readUTF() throws IOException {
-        return stream.readUTF();
+        byte[] bytes = new byte[this.readUnsignedShort()];
+        this.readFully(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }

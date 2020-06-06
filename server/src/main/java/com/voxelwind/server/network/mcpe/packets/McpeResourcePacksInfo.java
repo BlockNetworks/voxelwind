@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 public class McpeResourcePacksInfo implements NetworkPackage {
     private boolean mustAccept;
+    private boolean scriptingEnabled;
     private final List<ResourcePackInfo> behaviorPacks = new ArrayList<>();
     private final List<ResourcePackInfo> resourcePacks = new ArrayList<>();
 
@@ -23,6 +24,7 @@ public class McpeResourcePacksInfo implements NetworkPackage {
     @Override
     public void encode(ByteBuf buffer) {
         buffer.writeBoolean(mustAccept);
+        buffer.writeBoolean(scriptingEnabled);
         buffer.writeShort(behaviorPacks.size());
         for (ResourcePackInfo behaviorPack : behaviorPacks) {
             McpeUtil.writeResourcePackInfo(buffer, behaviorPack);

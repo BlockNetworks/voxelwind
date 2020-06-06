@@ -57,14 +57,15 @@ public class PacketRegistry {
         MCPE_PACKETS[0x0e] = McpeRemoveEntity.class;
         MCPE_PACKETS[0x0f] = McpeAddItemEntity.class;
         MCPE_PACKETS[0x10] = McpeAddHangingEntity.class;
+
         MCPE_PACKETS[0x11] = McpeTakeItemEntity.class;
         MCPE_PACKETS[0x12] = McpeMoveEntityAbsolute.class;
         MCPE_PACKETS[0x13] = McpeMovePlayer.class;
         MCPE_PACKETS[0x14] = McpeRiderJump.class;
         MCPE_PACKETS[0x15] = McpeUpdateBlock.class;
         MCPE_PACKETS[0x16] = McpeAddPainting.class;
-        MCPE_PACKETS[0x17] = McpeExplode.class;
-        MCPE_PACKETS[0x18] = McpeLevelSoundEvent.class;
+        MCPE_PACKETS[0x17] = McpeTickSync.class;
+        MCPE_PACKETS[0x18] = McpeLevelSoundEvent.class; // V1
         MCPE_PACKETS[0x19] = McpeLevelEvent.class;
         MCPE_PACKETS[0x1a] = McpeBlockEvent.class;
         MCPE_PACKETS[0x1b] = McpeEntityEvent.class;
@@ -98,7 +99,7 @@ public class PacketRegistry {
         MCPE_PACKETS[0x37] = McpeAdventureSettings.class;
         MCPE_PACKETS[0x38] = McpeBlockEntityData.class;
         //MCPE_PACKETS[0x39] = McpePlayerInput.class;
-        MCPE_PACKETS[0x3a] = McpeFullChunkData.class;
+        MCPE_PACKETS[0x3a] = McpeLevelChunkData.class;
         MCPE_PACKETS[0x3b] = McpeSetCommandsEnabled.class;
         MCPE_PACKETS[0x3c] = McpeSetDifficulty.class;
         MCPE_PACKETS[0x3d] = McpeChangeDimension.class;
@@ -145,7 +146,10 @@ public class PacketRegistry {
         //MCPE_PACKETS[0x66] = McpeServerSettingsRequest.class;
         //MCPE_PACKETS[0x67] = McpeServerSettingsResponse.class;
         //MCPE_PACKETS[0x68] = McpeShowProfile.class;
+        MCPE_PACKETS[0x77] = McpeEntityIdentifiers.class;
+        //MCPE_PACKETS[0x78] = McpeLevelSoundEventV2.class;
         MCPE_PACKETS[0x79] = McpeNetworkChunkPublisherUpdate.class;
+        MCPE_PACKETS[0x7a] = McpeBiomeDefinitionList.class;
 
         QUERY_PACKETS[0x00] = QueryStatistics.class;
         QUERY_PACKETS[0x09] = QueryHandshake.class;

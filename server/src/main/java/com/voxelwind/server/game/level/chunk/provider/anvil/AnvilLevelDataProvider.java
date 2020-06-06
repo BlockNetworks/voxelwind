@@ -3,7 +3,7 @@ package com.voxelwind.server.game.level.chunk.provider.anvil;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
 import com.voxelwind.nbt.io.NBTReader;
-import com.voxelwind.nbt.io.NBTReaders;
+import com.voxelwind.nbt.io.util.NBTReaders;
 import com.voxelwind.nbt.tags.CompoundTag;
 import com.voxelwind.nbt.tags.IntTag;
 import com.voxelwind.nbt.tags.LongTag;

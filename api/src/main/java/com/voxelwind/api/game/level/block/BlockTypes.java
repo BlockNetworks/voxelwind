@@ -26,7 +26,6 @@ import java.util.Map;
 @UtilityClass
 public class BlockTypes {
     private static TIntObjectMap<BlockType> BY_ID = new TIntObjectHashMap<>(192);
-    private static final Map<String, BlockType> BY_NAME = new HashMap<>();
 
     public static final BlockType AIR = IntBlock.builder().name("air").id(0).maxStackSize(0).diggable(false).transparent(true).emitLight(0).filterLight(0).hardness(0f).build();
     public static final BlockType STONE = IntBlock.builder().name("stone").id(1).maxStackSize(64).diggable(true).transparent(false).emitLight(0).filterLight(15).hardness(1.5f).build();
@@ -272,18 +271,11 @@ public class BlockTypes {
     public static final BlockType STRUCTURE_BLOCK = IntBlock.builder().name("structure_block").id(252).maxStackSize(64).diggable(false).transparent(false).emitLight(0).filterLight(15).hardness(-1f).build();
     public static final BlockType RESERVED6 = IntBlock.builder().name("reserved6").id(255).maxStackSize(64).diggable(true).transparent(false).emitLight(0).filterLight(15).hardness(-1f).build();
 
-    public static BlockType byId(int id) {
-        BlockType type = BY_ID.get(id);
-        if (type == null) {
-            throw new IllegalArgumentException("ID " + (id < 0 ? 255 - id : id) + " is not valid.");
-        }
-        return type;
-    }
-
     public static BlockType forId(int data) {
         BlockType type = BY_ID.get(data);
         if (type == null) {
-            throw new IllegalArgumentException("ID " + data + " is not valid.");
+            System.out.println("ID " + data + " is not valid.");
+            return AIR;
         }
         return type;
     }

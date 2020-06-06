@@ -34,6 +34,8 @@ public interface NetworkPacketHandler {
 
     void handle(McpeAdventureSettings packet);
 
+    void handle(McpeRespawn packet);
+
     // These are not packets but makes transactions easier to deal with.
     void handle(NormalTransaction transaction);
 

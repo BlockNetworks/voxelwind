@@ -17,6 +17,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>nukkitx-repo</id>
+            <url>https://repo.nukkitx.com/maven-releases</url>
+        </repository>
+    </repositories>
+
     <build>
         <finalName>voxelwind-${project.version}</finalName>
         <plugins>
@@ -67,6 +74,12 @@
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.nukkitx</groupId>-->
+<!--            <artifactId>nbt</artifactId>-->
+<!--            <version>1.3.2</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>

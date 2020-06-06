@@ -176,3 +176,4 @@ buildNumber.properties
 ### Voxelwind ###
 plugins/
 voxelwind.json
+logs/

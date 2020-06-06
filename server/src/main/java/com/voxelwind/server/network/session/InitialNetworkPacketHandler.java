@@ -157,6 +157,11 @@ public class InitialNetworkPacketHandler implements NetworkPacketHandler {
         throw new IllegalStateException("Got unexpected McpeCommandRequest");
     }
 
+    @Override
+    public void handle(McpeRespawn packet) {
+        throw new IllegalStateException("Got unexpected McpeRespawn");
+    }
+
     public void handle(NormalTransaction transaction) {
         throw new IllegalStateException("Got unexpected NormalTransaction");
     }
@@ -260,11 +265,13 @@ public class InitialNetworkPacketHandler implements NetworkPacketHandler {
         session.setHandler(playerSession.getPacketHandler());
 
         McpeResourcePacksInfo info = new McpeResourcePacksInfo();
+        info.setMustAccept(false);
+        info.setScriptingEnabled(false);
         session.addToSendQueue(info);
         System.out.println("RESOURCE PACKS INFO");
     }
 
-    // Verify whether client has sent valid and trusted certificate chain
+    // Verify whether client has sent valid and trusted certificate c   hain
     private boolean validateChainData(JsonNode data) throws Exception {
         Preconditions.checkArgument(data.getNodeType() == JsonNodeType.ARRAY, "chain data provided is not an array");
 
@@ -279,7 +286,8 @@ public class InitialNetworkPacketHandler implements NetworkPacketHandler {
 
             if (lastKey != null) {
                 if (!verify(lastKey, object)) {
-                    throw new JOSEException("Unable to verify key in chain.");
+                    return false;
+                    //throw new JOSEException("Unable to verify key in chain.");
                 }
             }
 

@@ -6,14 +6,10 @@ import com.voxelwind.nbt.util.Varints;
 import java.io.Closeable;
 import java.io.DataInput;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-
-import static com.voxelwind.nbt.io.NBTEncoding.MCPE_0_16_NETWORK;
 
 public class NBTReader implements Closeable {
     private final DataInput input;
-    private final NBTEncoding encoding;
     private boolean closed = false;
 
     public NBTReader(DataInput input) {
@@ -22,7 +18,6 @@ public class NBTReader implements Closeable {
 
     public NBTReader(DataInput input, NBTEncoding encoding) {
         this.input = Objects.requireNonNull(input, "input");
-        this.encoding = Objects.requireNonNull(encoding, "encoding");
     }
 
     public Tag<?> readTag() throws IOException {
@@ -33,7 +28,7 @@ public class NBTReader implements Closeable {
         if (closed) {
             throw new IllegalStateException("Trying to read from a closed reader!");
         }
-        int typeId = input.readByte() & 0xFF;
+        int typeId = input.readUnsignedByte();
         TagType type = TagType.fromId(typeId);
         if (type == null) {
             throw new IOException("Invalid encoding ID " + typeId);
@@ -48,12 +43,9 @@ public class NBTReader implements Closeable {
             throw new IllegalArgumentException("NBT compound is too deeply nested");
         }
 
-        String tagName = null;
+        String tagName = "";
         if (type != TagType.END && !skipName) {
-            int length = encoding == MCPE_0_16_NETWORK ? input.readByte() & 0xFF : input.readShort();
-            byte[] tagNameBytes = new byte[length];
-            input.readFully(tagNameBytes);
-            tagName = new String(tagNameBytes, StandardCharsets.UTF_8);
+            tagName = input.readUTF();
         }
 
         switch (type) {
@@ -69,8 +61,7 @@ public class NBTReader implements Closeable {
                 short sh = input.readShort();
                 return new ShortTag(tagName, sh);
             case INT:
-                int in = encoding == MCPE_0_16_NETWORK ? Varints.decodeSigned(input) : input.readInt();
-                return new IntTag(tagName, in);
+                return new IntTag(tagName, input.readInt());
             case LONG:
                 return new LongTag(tagName, input.readLong());
             case FLOAT:
@@ -78,15 +69,12 @@ public class NBTReader implements Closeable {
             case DOUBLE:
                 return new DoubleTag(tagName, input.readDouble());
             case BYTE_ARRAY:
-                int arraySz1 = encoding == MCPE_0_16_NETWORK ? Varints.decodeSigned(input) : input.readInt();
+                int arraySz1 = input.readInt();
                 byte[] valueBytesBa = new byte[arraySz1];
                 input.readFully(valueBytesBa);
                 return new ByteArrayTag(tagName, valueBytesBa);
             case STRING:
-                int length = encoding == MCPE_0_16_NETWORK ? input.readByte() : input.readUnsignedShort();
-                byte[] valueBytes = new byte[length];
-                input.readFully(valueBytes);
-                return new StringTag(tagName, new String(valueBytes, StandardCharsets.UTF_8));
+                return new StringTag(tagName, input.readUTF());
             case COMPOUND:
                 Map<String, Tag<?>> map = new HashMap<>();
                 Tag<?> inTag1;
@@ -95,26 +83,32 @@ public class NBTReader implements Closeable {
                 }
                 return new CompoundTag(tagName, map);
             case LIST:
-                int inId = input.readByte() & 0xFF;
+                int inId = input.readUnsignedByte();
                 TagType listType = TagType.fromId(inId);
                 if (listType == null) {
-                    String append = tagName == null ? "" : "('" + tagName + "')";
-                    throw new IllegalArgumentException("Found invalid type in TAG_List" + append + ": " + inId);
+                    throw new IllegalArgumentException("Found invalid type in TAG_List('" + tagName + "'): " + inId);
                 }
                 List<Tag<?>> list = new ArrayList<>();
-                int listLength = encoding == MCPE_0_16_NETWORK ? Varints.decodeSigned(input) : input.readInt();
+                int listLength = input.readInt();
                 for (int i = 0; i < listLength; i++) {
                     list.add(deserialize(listType, true, depth + 1));
                 }
                 // Unchecked cast is expected
                 return new ListTag(tagName, listType.getTagClass(), list);
             case INT_ARRAY:
-                int arraySz2 = encoding == MCPE_0_16_NETWORK ? Varints.decodeSigned(input) : input.readInt();
+                int arraySz2 = input.readInt();
                 int[] valueBytesInt = new int[arraySz2];
                 for (int i = 0; i < arraySz2; i++) {
                     valueBytesInt[i] = input.readInt();
                 }
                 return new IntArrayTag(tagName, valueBytesInt);
+            case LONG_ARRAY:
+                int arraySz3 = input.readInt();
+                long[] valueBytesLong = new long[arraySz3];
+                for (int i = 0; i < arraySz3; i++) {
+                    valueBytesLong[i] = input.readLong();
+                }
+                return new LongArrayTag(tagName, valueBytesLong);
         }
 
         throw new IllegalArgumentException("Unknown type " + type);

@@ -2,43 +2,70 @@ package com.voxelwind.server.network.session.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 
-@Value
+import java.util.UUID;
+
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
+@NoArgsConstructor
 public class ClientData {
-    @JsonProperty("ADRole")
-    private final String adRole;
     @JsonProperty("CapeData")
-    private final byte[] capeData; // deserialized
+    private byte[] capeData; // deserialized
     @JsonProperty("ClientRandomId")
-    private final long clientRandomId;
+    private long clientRandomId;
     @JsonProperty("CurrentInputMode")
-    private final int currentInputMode;
+    private int currentInputMode;
     @JsonProperty("DefaultInputMode")
-    private final int defaultInputMode;
+    private int defaultInputMode;
+    @JsonProperty("DeviceId")
+    private String deviceId;
     @JsonProperty("DeviceModel")
-    private final String deviceModel;
+    private String deviceModel;
     @JsonProperty("DeviceOS")
-    private final int deviceOs;
+    private int deviceOS;
     @JsonProperty("GameVersion")
-    private final String gameVersion;
+    private String gameVersion;
     @JsonProperty("GuiScale")
-    private final int guiScale;
-    @JsonProperty("IsEduMode")
-    private final boolean isEduMode;
+    private int guiScale;
     @JsonProperty("LanguageCode")
-    private final String languageCode;
+    private String languageCode;
+    @JsonProperty("PlatformOfflineId")
+    private String platformOfflineId;
+    @JsonProperty("PlatformOnlineId")
+    private String platformOnlineId;
+    @JsonProperty("PremiumSkin")
+    private boolean premiumSkin;
+    @JsonProperty("SelfSignedId")
+    private UUID selfSignedId;
     @JsonProperty("ServerAddress")
-    private final String serverAddress;
+    private String serverAddress;
     @JsonProperty("SkinData")
-    private final byte[] skinData; // Jackson conveniently deserializes from Base64
-    @JsonProperty("SkinGeometry")
-    private final byte[] skinGeometry; // deserialized
-    @JsonProperty("SkinGeometryName")
-    private final String skinGeometryName;
+    private byte[] skinData; // deserialized
+    @JsonProperty("SkinGeometryData")
+    private byte[] skinGeometry; // deserialized
+    @JsonProperty("SkinResourcePatch")
+    private String skinGeometryName;
+    @JsonProperty("SkinImageHeight")
+    private int skinImageHeight;
+    @JsonProperty("SkinImageWidth")
+    private int skinImageWidth;
     @JsonProperty("SkinId")
-    private final String skinId;
+    private String skinId;
+    @JsonProperty("ThirdPartyName")
+    private String thirdPartyName;
     @JsonProperty("UIProfile")
-    private final int uiProfile;
+    private int uiProfile;
+    @JsonProperty("CapeOnClassicSkin")
+    private boolean capeOnClassicSkin;
+    @JsonProperty("PersonaSkin")
+    private boolean personaSkin;
+    @JsonProperty("CapeImageHeight")
+    private int capeImageHeight;
+    @JsonProperty("CapeImageWidth")
+    private int capeImageWidth;
+    @JsonProperty("CapeId")
+    private String capeId;
 }

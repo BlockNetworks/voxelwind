@@ -133,4 +133,8 @@ public class CompoundTag implements Tag<Map<String, Tag<?>>> {
     public Tag<?> get(String key) {
         return value.get(key);
     }
+
+    public boolean contains(String key) {
+        return value.containsKey(key);
+    }
 }

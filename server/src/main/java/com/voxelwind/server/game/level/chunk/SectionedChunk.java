@@ -17,13 +17,11 @@ import com.voxelwind.nbt.tags.IntTag;
 import com.voxelwind.nbt.tags.Tag;
 import com.voxelwind.nbt.util.SwappedDataOutputStream;
 import com.voxelwind.nbt.util.Varints;
-import com.voxelwind.server.VoxelwindServer;
 import com.voxelwind.server.game.level.VoxelwindLevel;
 import com.voxelwind.server.game.level.chunk.util.FullChunkPacketCreator;
+import com.voxelwind.server.game.level.util.PaletteManager;
 import com.voxelwind.server.game.serializer.MetadataSerializer;
-import com.voxelwind.server.network.mcpe.packets.McpeFullChunkData;
-import com.voxelwind.server.network.mcpe.packets.McpeWrapper;
-import com.voxelwind.server.network.util.CompressionUtil;
+import com.voxelwind.server.network.mcpe.packets.McpeLevelChunkData;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.TLongSet;
@@ -48,7 +46,7 @@ import java.util.*;
 public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, FullChunkPacketCreator {
     private final Level level;
     private final TIntObjectMap<CompoundTag> serializedBlockEntities = new TIntObjectHashMap<>();
-    private SoftReference<byte[]> precompressed;
+    private SoftReference<McpeLevelChunkData> precompressed;
 
     public SectionedChunk(int x, int z, Level level) {
         this(new ChunkSection[16], x, z, level);
@@ -82,7 +80,7 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
         checkPosition(x, y, z);
 
         ChunkSection section = getOrCreateSection(y >> 4);
-        section.setBlockId(x, y % 16, z, 0, ((VoxelwindLevel) level).getPaletteManager().getOrCreateRuntimeId(state));
+        section.setBlockId(x, y % 16, z, 0, PaletteManager.get().getOrCreateRuntimeId(state));
 
         if (shouldRecalculateLight) {
             // Recalculate the height map and lighting for this chunk section.
@@ -193,71 +191,44 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
 
     @Override
     @Synchronized
-    public McpeFullChunkData toFullChunkData() {
-        McpeFullChunkData data = new McpeFullChunkData();
+    public McpeLevelChunkData toFullChunkData() {
+        if (precompressed != null && precompressed.get() != null) {
+            return precompressed.get();
+        }
+
+        McpeLevelChunkData data = new McpeLevelChunkData();
         data.setChunkX(x);
         data.setChunkZ(z);
+        data.setCachingEnabled(false);
 
-        if (precompressed != null && precompressed.get() != null) {
-            data.setData(precompressed.get());
-            return data;
-        }
-
-        // Write out block entities first.
-        CanWriteToBB blockEntities = null;
-        int nbtSize = 0;
-        if (!serializedBlockEntities.isEmpty()) {
-            blockEntities = new CanWriteToBB();
-            try (NBTWriter writer = new NBTWriter(new SwappedDataOutputStream(blockEntities), NBTEncoding.MCPE_0_16_NETWORK)) {
-                // Write out NBT compounds for all block entities.
-                for (CompoundTag entity : serializedBlockEntities.valueCollection()) {
-                    writer.write(entity);
-                }
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            }
-            nbtSize = blockEntities.size();
-        }
-
-        int topBlank = 0;
-        for (int i = sections.length - 1; i >= 0; i--) {
-            ChunkSection section = sections[i];
-            if (section == null || section.isEmpty()) {
-                topBlank = i + 1;
-            } else {
-                break;
-            }
-        }
-
-        int bufferSize = 1 + 4096 * topBlank + 768 + 2 + nbtSize;
-        ByteBuf buf  = PooledByteBufAllocator.DEFAULT.buffer(bufferSize);
+        ByteBuf buf = Unpooled.buffer();
         try {
-            buf.markReaderIndex();
-            buf.writeByte((byte) topBlank);
+            int sectionCount = sections.length - 1;
+            while (sectionCount >= 0 && sections[sectionCount].isEmpty()) {
+                sectionCount--;
+            }
+            sectionCount++;
 
-            for (int i = 0; i < topBlank; i++) {
-                getOrCreateSection(i).writeTo(buf);
-
-                buf.writeBytes(height);
-                buf.writeBytes(biomeId);
-
-                // extra data
-                Varints.writeInt(buf, 0);
-                Varints.writeInt(buf, 0);
-
-                if (blockEntities != null) {
-                    blockEntities.writeTo(buf);
-                }
+            for (int i = 0; i < sectionCount; i++) {
+                sections[i].writeTo(buf);
             }
 
-            byte[] chunkData = new byte[buf.readableBytes()];
-            precompressed = new SoftReference<>(chunkData);
-            buf.readBytes(chunkData);
-            data.setData(precompressed.get());
+            buf.writeBytes(new byte[256]); // Biomes
+            buf.writeByte(0); // Border blocks (education edition only)
+
+            // Extra data
+            Varints.encodeUnsigned(buf, 0);
+
+            byte[] payload = new byte[buf.readableBytes()];
+            buf.readBytes(payload);
+
+            data.setSubChunksLength(sectionCount);
+            data.setData(payload);
+
+            this.precompressed = new SoftReference<>(data);
         } finally {
             buf.release();
         }
-
         return data;
     }
 
@@ -326,7 +297,7 @@ public class SectionedChunk extends SectionedChunkSnapshot implements Chunk, Ful
         while ((toSpread = spread.poll()) != null) {
             ChunkSection cs = getOrCreateSection(toSpread.getY() / 16);
             byte adjustedLight = (byte) (cs.getBlockLight(toSpread.getX(), toSpread.getY() % 16, toSpread.getZ())
-                                - ((VoxelwindLevel) level).getPaletteManager().getBlockState(cs.getBlockId(toSpread.getX(), toSpread.getY() & 15, toSpread.getZ(), 0))
+                                - PaletteManager.get().getBlockState(cs.getBlockId(toSpread.getX(), toSpread.getY() & 15, toSpread.getZ(), 0))
                                 .orElseThrow(() -> new IllegalStateException("Runtime ID is not registered")).getBlockType().filtersLight());
 
             if(adjustedLight >= 1){
