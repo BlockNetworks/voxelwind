@@ -83,7 +83,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>4.24</version>
+            <version>7.9</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
-            <version>4.1.24.Final</version>
+            <version>4.1.45.Final</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
